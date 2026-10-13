@@ -1,1 +1,3032 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>备考工作台 · 五科记录 / 统计 / 练题 / 复习</title>
+<!-- SECTION: styles -->
+<style>
+:root{
+  --bg:#f4f6f9; --panel:#fff; --ink:#182130; --ink2:#5b6779; --ink3:#8a95a6;
+  --line:#e2e7ef; --line2:#eef1f6; --accent:#2f5fe3; --accent2:#1d45b8;
+  --accent-soft:#eaf0ff; --ok:#12805c; --ok-soft:#e4f6ee; --warn:#a1560a; --warn-soft:#fdf1e2;
+  --bad:#bf2727; --bad-soft:#fdeaea; --gray-soft:#f0f2f6; --radius:12px;
+  --shadow:0 1px 2px rgba(24,33,48,.05), 0 6px 20px rgba(24,33,48,.05);
+  --shadow-lg:0 12px 40px rgba(24,33,48,.16);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",Roboto,sans-serif;
+  padding-bottom:96px; -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent);text-decoration:none}
+h1,h2,h3,h4{margin:0;font-weight:650}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.hidden{display:none!important}
+
+/* ---------- layout ---------- */
+.topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1260px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(140deg,var(--accent),#5b8cff);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px}
+.brand h1{font-size:16px}
+.brand p{margin:0;font-size:11.5px;color:var(--ink3)}
+.searchbox{position:relative;flex:1 1 240px;max-width:320px}
+.searchbox input{width:100%;height:34px;padding:0 12px 0 32px;border:1px solid var(--line);border-radius:9px;background:var(--gray-soft)}
+.searchbox input:focus{outline:2px solid var(--accent-soft);border-color:var(--accent);background:#fff}
+.searchbox .ico{position:absolute;left:10px;top:8px;color:var(--ink3)}
+.suggest{position:absolute;top:38px;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-lg);max-height:290px;overflow:auto;z-index:60}
+.suggest button{display:block;width:100%;text-align:left;padding:8px 12px;border:0;background:none;cursor:pointer;border-bottom:1px solid var(--line2)}
+.suggest button:hover{background:var(--accent-soft)}
+.suggest .tag{font-size:11px;color:var(--ink3)}
+.countdowns{display:flex;gap:8px;flex-wrap:wrap}
+.cd{border:1px solid var(--line);border-radius:9px;padding:4px 10px;background:#fff;min-width:82px}
+.cd b{display:block;font-size:15px;line-height:1.2}
+.cd span{font-size:11px;color:var(--ink3)}
+.cd.hot{border-color:#f3c9a0;background:var(--warn-soft)}
+.cd.hot b{color:var(--warn)}
+.cd.na b{color:var(--ink3)}
+.tabs{max-width:1260px;margin:0 auto;padding:0 20px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:none;padding:9px 14px;font-size:13.5px;color:var(--ink2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;border-radius:6px 6px 0 0}
+.tabs button:hover{background:var(--gray-soft);color:var(--ink)}
+.tabs button.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:650;background:#fff}
+.wrap{max-width:1260px;margin:0 auto;padding:20px}
+.subtabs{display:flex;gap:6px;margin:0 0 16px;flex-wrap:wrap}
+.subtabs button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;color:var(--ink2);cursor:pointer}
+.subtabs button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.subtabs button .cnt{opacity:.7;font-size:11.5px;margin-left:4px}
+
+/* ---------- cards & grids ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.card h3{font-size:14.5px;margin-bottom:4px}
+.card .sub{font-size:12px;color:var(--ink3);margin:0 0 12px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g-2-1{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+@media (max-width:1080px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.g-2-1{grid-template-columns:1fr}}
+@media (max-width:660px){.g4,.g3,.g2,.g-2-1{grid-template-columns:1fr}.wrap{padding:14px}.topbar-in{padding:10px 14px}.tabs{padding:0 14px}}
+.kpi{display:flex;flex-direction:column;gap:2px}
+.kpi b{font-size:26px;line-height:1.15}
+.kpi .lb{font-size:12px;color:var(--ink3)}
+.kpi .fo{font-size:11.5px;color:var(--ink2)}
+.kpi .fo.up{color:var(--ok)}
+
+/* ---------- chips / badges ---------- */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:2px 8px;border-radius:999px;background:var(--gray-soft);color:var(--ink2);border:1px solid var(--line2)}
+.chip.accent{background:var(--accent-soft);color:var(--accent2);border-color:#d5e2ff}
+.chip.ok{background:var(--ok-soft);color:var(--ok);border-color:#c8ebdb}
+.chip.warn{background:var(--warn-soft);color:var(--warn);border-color:#f3d9b6}
+.chip.bad{background:var(--bad-soft);color:var(--bad);border-color:#f6cfcf}
+.chip.seed{background:#f0edff;color:#5b45c8;border-color:#ded6ff;cursor:default}
+.chip.clickable{cursor:pointer}
+.chip.clickable:hover{border-color:var(--accent);color:var(--accent)}
+.rowchips{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ---------- buttons ---------- */
+.btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 14px;cursor:pointer;font-size:13px;transition:.15s}
+.btn:hover{border-color:var(--accent);color:var(--accent2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.primary:hover{background:var(--accent2);color:#fff}
+.btn.ghost{border-color:transparent;background:var(--gray-soft);color:var(--ink2)}
+.btn.small{padding:4px 9px;font-size:12px;border-radius:7px}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.linkbtn{border:0;background:none;color:var(--accent);cursor:pointer;padding:2px 4px;font-size:12.5px}
+.linkbtn:hover{text-decoration:underline}
+
+/* ---------- forms ---------- */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;color:var(--ink2);font-weight:600}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;width:100%}
+.field textarea{resize:vertical;min-height:70px;line-height:1.55}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.field .hint{font-size:11.5px;color:var(--ink3)}
+.form-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.form-grid.wide{grid-template-columns:1fr}
+hr.sep{border:0;border-top:1px solid var(--line2);margin:14px 0}
+
+/* ---------- bars & charts ---------- */
+.hbar{display:grid;grid-template-columns:74px 1fr 46px;gap:8px;align-items:center;font-size:12px;margin-bottom:7px}
+.hbar .t{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar .tr{height:8px;border-radius:5px;background:var(--line2);overflow:hidden}
+.hbar .fl{height:100%;border-radius:5px;background:var(--accent)}
+.hbar .v{text-align:right;color:var(--ink2);font-variant-numeric:tabular-nums}
+.vbars{display:flex;align-items:flex-end;gap:6px;height:120px;padding-top:6px}
+.vbars .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;min-width:0}
+.vbars .bar{width:100%;max-width:26px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#5b8cff,var(--accent))}
+.vbars .bar.zero{background:var(--line2)}
+.vbars .cap{font-size:10.5px;color:var(--ink3);white-space:nowrap}
+.vbars .val{font-size:10.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.donut{position:relative;width:118px;height:118px;flex:0 0 auto}
+.donut svg{transform:rotate(-90deg)}
+.donut .ctr{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.donut .ctr b{font-size:21px;line-height:1}
+.donut .ctr span{font-size:11px;color:var(--ink3)}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:7px}
+.legend .r{display:flex;justify-content:space-between;gap:12px}
+.progress{height:7px;border-radius:5px;background:var(--line2);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.stack{display:flex;height:7px;border-radius:5px;overflow:hidden;background:var(--line2)}
+.stack i{height:100%}
+.meter-row{display:grid;grid-template-columns:110px 1fr 42px;gap:10px;align-items:center;margin-bottom:9px;font-size:12.5px}
+.meter-row .v{text-align:right;color:var(--ink2);font-variant-numeric:tabular-nums}
+.weekgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:14px}
+@media (max-width:900px){.weekgrid{display:flex;overflow-x:auto;padding-bottom:6px;gap:8px}.weekgrid>.card{min-width:150px;flex:0 0 auto}}
+
+/* ---------- lists / tables ---------- */
+.list{display:flex;flex-direction:column;gap:10px}
+.item{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff}
+.item:hover{border-color:#cfd9ea}
+.item .hd{display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.item .hd .ttl{font-weight:600;flex:1;min-width:120px}
+.item .meta{font-size:11.5px;color:var(--ink3)}
+.item .bd{font-size:13px;color:var(--ink2);white-space:pre-wrap;word-break:break-word}
+.item .ft{margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:11.5px;color:var(--ink3);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:8px;border-bottom:1px solid var(--line2);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.op{text-align:right;white-space:nowrap}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:26px 18px;text-align:center;color:var(--ink3)}
+.empty b{display:block;color:var(--ink2);font-size:14px;margin-bottom:4px}
+.kp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(216px,1fr));gap:9px}
+.kp-card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;cursor:pointer;transition:.12s;display:flex;flex-direction:column;gap:7px}
+.kp-card:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.kp-card .nm{font-weight:600;font-size:13px;flex:1}
+.kp-card .sc{font-size:12px;color:var(--ink3)}
+.kp-card .sec{font-size:11px;color:var(--ink3)}
+.st0{background:var(--gray-soft);color:var(--ink2);border-color:var(--line)}
+.st1{background:var(--warn-soft);color:var(--warn);border-color:#f3d9b6}
+.st2{background:var(--ok-soft);color:var(--ok);border-color:#c8ebdb}
+.st3{background:var(--bad-soft);color:var(--bad);border-color:#f6cfcf}
+
+/* ---------- practice ---------- */
+.qcard{border:1px solid var(--line);border-radius:12px;background:#fff;padding:16px}
+.qcard .stem{font-size:14.5px;line-height:1.7;margin-bottom:12px;white-space:pre-wrap;word-break:break-word}
+.opt{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:8px 11px;margin-bottom:7px;cursor:pointer;background:#fff}
+.opt:hover{border-color:var(--accent);background:#fbfcff}
+.opt .k{font-weight:650;color:var(--ink2);flex:0 0 auto}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.dim{opacity:.65}
+.verdict{border-radius:10px;padding:11px 13px;font-size:13px;margin-top:12px;white-space:pre-wrap}
+.verdict.ok{background:var(--ok-soft);color:#0d5f45}
+.verdict.bad{background:var(--bad-soft);color:#8f1d1d}
+.verdict.info{background:var(--accent-soft);color:var(--accent2)}
+.verdict b{display:block;margin-bottom:3px}
+
+/* ---------- dropzone ---------- */
+.drop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;background:#fff;transition:.15s}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop b{display:block;margin-bottom:4px}
+.drop p{margin:0;font-size:12px;color:var(--ink3)}
+.report{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:12.5px;background:var(--gray-soft);max-height:190px;overflow:auto}
+.report .f{color:var(--bad)}
+.report .s{color:var(--ok)}
+
+/* ---------- modal ---------- */
+.mask{position:fixed;inset:0;background:rgba(18,26,38,.42);display:grid;place-items:center;z-index:80;padding:16px}
+.modal{background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);width:min(620px,100%);max-height:86vh;overflow:auto;padding:18px}
+.modal h3{font-size:15.5px;margin-bottom:10px}
+.modal .ft{margin-top:16px;display:flex;gap:8px;justify-content:flex-end}
+
+/* ---------- toast ---------- */
+.toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:120;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:#1b2430;color:#fff;border-radius:9px;padding:8px 15px;font-size:13px;box-shadow:var(--shadow-lg);animation:tin .2s}
+.toast.ok{background:#0f6c4d}.toast.bad{background:#a41f1f}
+@keyframes tin{from{opacity:0;transform:translateY(-7px)}}
+
+/* ---------- AI dock ---------- */
+.dock{position:fixed;left:18px;bottom:18px;z-index:70}
+.dock-btn{width:52px;height:52px;border-radius:16px;border:0;background:linear-gradient(140deg,var(--accent),#6f9bff);color:#fff;font-size:12px;font-weight:700;cursor:pointer;box-shadow:var(--shadow-lg);line-height:1.15}
+.dock-btn:hover{transform:translateY(-1px)}
+.panel{position:absolute;left:0;bottom:62px;width:352px;height:min(540px,72vh);background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden}
+.panel .ph{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.panel .ph b{font-size:13.5px}
+.panel .ph .sp{margin-left:auto}
+.panel .msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px;background:#fbfcfe}
+.msg{max-width:88%;padding:9px 11px;border-radius:11px;font-size:13px;white-space:pre-wrap;word-break:break-word;line-height:1.6}
+.msg.me{align-self:flex-end;background:var(--accent);color:#fff}
+.msg.bot{align-self:flex-start;background:#fff;border:1px solid var(--line)}
+.msg.sys{align-self:center;background:var(--warn-soft);color:var(--warn);font-size:11.5px;max-width:96%}
+.msg .who{display:block;font-size:10.5px;opacity:.75;margin-bottom:3px}
+.msg .act{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+.panel .pcomposer{border-top:1px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:8px;background:#fff}
+.panel textarea{border:1px solid var(--line);border-radius:9px;padding:8px 10px;min-height:58px;resize:vertical;font:inherit;line-height:1.55}
+.panel textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.panel .prow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.panel .prow .sp{margin-left:auto}
+.ctxbox{font-size:11.5px;color:var(--ink2);background:var(--accent-soft);border:1px solid #d5e2ff;border-radius:8px;padding:6px 8px;display:flex;gap:6px;align-items:flex-start}
+.ctxbox .x{margin-left:auto;cursor:pointer;color:var(--ink3)}
+.warnbox{font-size:11.5px;color:var(--warn);background:var(--warn-soft);border:1px solid #f3d9b6;border-radius:8px;padding:7px 9px}
+@media (max-width:660px){.dock{left:12px;bottom:12px}.panel{width:calc(100vw - 24px);height:62vh}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<!-- SECTION: shell -->
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="brand-mark">备</div>
+      <div>
+        <h1>备考工作台</h1>
+        <p>考研政治 · 英语一 · 数学二 · 地科 880 · 六级/雅思</p>
+      </div>
+    </div>
+    <div class="searchbox">
+      <span class="ico" aria-hidden="true">⌕</span>
+      <input id="gsearch" type="search" placeholder="搜索错题 / 题目 / 文献 / 知识点" autocomplete="off" aria-label="全局搜索">
+      <div id="gsuggest" class="suggest hidden"></div>
+    </div>
+    <div class="countdowns" id="countdowns"></div>
+  </div>
+  <nav class="tabs" id="maintabs" aria-label="主导航"></nav>
+</header>
+
+<main class="wrap" id="view" tabindex="-1"></main>
+
+<!-- SECTION: ai dock -->
+<div class="dock" id="dock">
+  <div class="panel hidden" id="aipanel" role="dialog" aria-label="千问提问窗口">
+    <div class="ph">
+      <b>千问 · 提问窗口</b>
+      <span class="chip" id="aimodelchip">未配置</span>
+      <button class="btn small ghost sp" id="aiclr">清空</button>
+      <button class="btn small ghost" id="aiclose" aria-label="关闭">✕</button>
+    </div>
+    <div class="msgs" id="aimsgs"></div>
+    <div class="pcomposer">
+      <div id="aictx"></div>
+      <textarea id="aiinput" placeholder="把你的疑问写在这里，例如：这道题的 B 选项为什么不构成偷换概念？"></textarea>
+      <div class="prow">
+        <button class="btn small" id="aiattach">带入当前题目</button>
+        <button class="btn small" id="aitpl">常用追问</button>
+        <span class="sp"></span>
+        <button class="btn primary small" id="aisend">发送提问</button>
+      </div>
+    </div>
+  </div>
+  <button class="dock-btn" id="dockbtn" aria-label="打开千问提问窗口">千问<br>AI</button>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="modalroot"></div>
+
+<script>
+/* SECTION: seed —— 五科知识框架、示例题与分类字典（均为预置示例，可在页面内增删改） */
+window.SEED = {
+  errorCauses: ['概念不清', '审题偏差', '计算失误', '记忆混淆', '思路缺失', '时间不够'],
+  kpStatuses: ['未学', '在学', '已掌握', '需巩固'],
+
+  subjects: [
+    {
+      id: 'zz', name: '考研政治', short: '政治', color: '#d64545', examDate: '',
+      sections: [
+        { id: 'zz-my', name: '马克思主义基本原理' },
+        { id: 'zz-mz', name: '毛泽东思想和中国特色社会主义理论体系' },
+        { id: 'zz-sg', name: '中国近现代史纲要' },
+        { id: 'zz-xg', name: '新时代中国特色社会主义思想' },
+        { id: 'zz-sx', name: '思想道德与法治' },
+        { id: 'zz-xs', name: '形势与政策' }
+      ]
+    },
+    {
+      id: 'e1', name: '考研英语一', short: '英一', color: '#2f6fdb', examDate: '',
+      sections: [
+        { id: 'e1-kp', name: '知识运用（完形）' },
+        { id: 'e1-yd', name: '传统阅读' },
+        { id: 'e1-xlx', name: '新题型' },
+        { id: 'e1-fy', name: '翻译' },
+        { id: 'e1-zw', name: '写作' }
+      ]
+    },
+    {
+      id: 'm2', name: '数学二', short: '数二', color: '#7a4fd0', examDate: '',
+      sections: [
+        { id: 'm2-gs', name: '高等数学' },
+        { id: 'm2-xd', name: '线性代数' },
+        { id: 'm2-gl', name: '概率论与数理统计' }
+      ]
+    },
+    {
+      id: 'dks', name: '地球科学 880', short: '880', color: '#1d8a63', examDate: '',
+      sections: [
+        { id: 'dks-ks', name: '矿物与岩石' },
+        { id: 'dks-dc', name: '地层与古生物' },
+        { id: 'dks-gz', name: '构造地质' },
+        { id: 'dks-ds', name: '地史与区域地质' },
+        { id: 'dks-kc', name: '矿产与资源' }
+      ]
+    },
+    {
+      id: 'ce', name: '六级 → 雅思', short: '六级/雅思', color: '#c97a12', examDate: '',
+      sections: [
+        { id: 'ce-ting', name: '听力' },
+        { id: 'ce-yue', name: '阅读' },
+        { id: 'ce-xie', name: '写作' },
+        { id: 'ce-kou', name: '口语' },
+        { id: 'ce-ci', name: '词汇与语法' }
+      ]
+    }
+  ],
+
+  kps: [
+    { id: 'kp-zz-1', subjectId: 'zz', sectionId: 'zz-my', name: '唯物论与辩证法', status: 1 },
+    { id: 'kp-zz-2', subjectId: 'zz', sectionId: 'zz-my', name: '认识论与真理标准', status: 1 },
+    { id: 'kp-zz-3', subjectId: 'zz', sectionId: 'zz-my', name: '政治经济学·剩余价值', status: 0 },
+    { id: 'kp-zz-4', subjectId: 'zz', sectionId: 'zz-mz', name: '毛中特活的灵魂', status: 0 },
+    { id: 'kp-zz-5', subjectId: 'zz', sectionId: 'zz-mz', name: '新民主主义革命理论', status: 0 },
+    { id: 'kp-zz-6', subjectId: 'zz', sectionId: 'zz-sg', name: '旧民主主义革命脉络', status: 0 },
+    { id: 'kp-zz-7', subjectId: 'zz', sectionId: 'zz-sg', name: '抗日战争与解放战争', status: 1 },
+    { id: 'kp-zz-8', subjectId: 'zz', sectionId: 'zz-xg', name: '中国式现代化', status: 0 },
+    { id: 'kp-zz-9', subjectId: 'zz', sectionId: 'zz-sx', name: '社会主义核心价值观', status: 1 },
+    { id: 'kp-zz-10', subjectId: 'zz', sectionId: 'zz-sx', name: '宪法与法律基础', status: 0 },
+    { id: 'kp-zz-11', subjectId: 'zz', sectionId: 'zz-xs', name: '当年时政热点', status: 0 },
+
+    { id: 'kp-e1-1', subjectId: 'e1', sectionId: 'e1-kp', name: '逻辑关系词辨析', status: 1 },
+    { id: 'kp-e1-2', subjectId: 'e1', sectionId: 'e1-kp', name: '高频近义词组', status: 1 },
+    { id: 'kp-e1-3', subjectId: 'e1', sectionId: 'e1-yd', name: '长难句拆分', status: 0 },
+    { id: 'kp-e1-4', subjectId: 'e1', sectionId: 'e1-yd', name: '细节题定位同义替换', status: 1 },
+    { id: 'kp-e1-5', subjectId: 'e1', sectionId: 'e1-yd', name: '推断题的原文边界', status: 0 },
+    { id: 'kp-e1-6', subjectId: 'e1', sectionId: 'e1-yd', name: '主旨题与段落功能', status: 0 },
+    { id: 'kp-e1-7', subjectId: 'e1', sectionId: 'e1-xlx', name: '七选五/排序题', status: 0 },
+    { id: 'kp-e1-8', subjectId: 'e1', sectionId: 'e1-fy', name: '译文字序与增译省译', status: 1 },
+    { id: 'kp-e1-9', subjectId: 'e1', sectionId: 'e1-zw', name: '大小作文结构与句型', status: 0 },
+
+    { id: 'kp-m2-1', subjectId: 'm2', sectionId: 'm2-gs', name: '极限与连续', status: 1 },
+    { id: 'kp-m2-2', subjectId: 'm2', sectionId: 'm2-gs', name: '导数应用与中值定理', status: 0 },
+    { id: 'kp-m2-3', subjectId: 'm2', sectionId: 'm2-gs', name: '不定积分技巧', status: 1 },
+    { id: 'kp-m2-4', subjectId: 'm2', sectionId: 'm2-gs', name: '定积分几何应用', status: 0 },
+    { id: 'kp-m2-5', subjectId: 'm2', sectionId: 'm2-gs', name: '多元微分与极值', status: 0 },
+    { id: 'kp-m2-6', subjectId: 'm2', sectionId: 'm2-xd', name: '行列式与矩阵的秩', status: 1 },
+    { id: 'kp-m2-7', subjectId: 'm2', sectionId: 'm2-xd', name: '特征值与相似对角化', status: 0 },
+    { id: 'kp-m2-8', subjectId: 'm2', sectionId: 'm2-xd', name: '二次型', status: 0 },
+    { id: 'kp-m2-9', subjectId: 'm2', sectionId: 'm2-gl', name: '随机变量与常见分布', status: 1 },
+    { id: 'kp-m2-10', subjectId: 'm2', sectionId: 'm2-gl', name: '数字特征与大数定律', status: 0 },
+
+    { id: 'kp-dk-1', subjectId: 'dks', sectionId: 'dks-ks', name: '矿物物理性质与鉴定', status: 1 },
+    { id: 'kp-dk-2', subjectId: 'dks', sectionId: 'dks-ks', name: '三大岩类分类与结构构造', status: 1 },
+    { id: 'kp-dk-3', subjectId: 'dks', sectionId: 'dks-ks', name: '岩石圈物质循环', status: 0 },
+    { id: 'kp-dk-4', subjectId: 'dks', sectionId: 'dks-dc', name: '地层层序律与地质年代表', status: 1 },
+    { id: 'kp-dk-5', subjectId: 'dks', sectionId: 'dks-dc', name: '标准化石与对比', status: 0 },
+    { id: 'kp-dk-6', subjectId: 'dks', sectionId: 'dks-gz', name: '褶皱与断层', status: 0 },
+    { id: 'kp-dk-7', subjectId: 'dks', sectionId: 'dks-gz', name: '板块构造理论', status: 1 },
+    { id: 'kp-dk-8', subjectId: 'dks', sectionId: 'dks-ds', name: '中国区域构造演化', status: 0 },
+    { id: 'kp-dk-9', subjectId: 'dks', sectionId: 'dks-kc', name: '成矿作用与矿床类型', status: 0 },
+
+    { id: 'kp-ce-1', subjectId: 'ce', sectionId: 'ce-ting', name: '听力地图/填空题', status: 0 },
+    { id: 'kp-ce-2', subjectId: 'ce', sectionId: 'ce-yue', name: 'T/F/NG 判断题', status: 1 },
+    { id: 'kp-ce-3', subjectId: 'ce', sectionId: 'ce-ci', name: '同义替换词库', status: 1 },
+    { id: 'kp-ce-4', subjectId: 'ce', sectionId: 'ce-ci', name: '学术词汇表 AWL', status: 0 },
+    { id: 'kp-ce-5', subjectId: 'ce', sectionId: 'ce-xie', name: 'Task 1 趋势描述句型', status: 0 },
+    { id: 'kp-ce-6', subjectId: 'ce', sectionId: 'ce-xie', name: 'Task 2 论证结构', status: 0 },
+    { id: 'kp-ce-7', subjectId: 'ce', sectionId: 'ce-kou', name: '口语 Part 2 话题展开', status: 1 }
+  ],
+
+  questions: [
+    {
+      id: 'q-zz-1', subjectId: 'zz', sectionId: 'zz-my', kpId: 'kp-zz-1', type: 'single', origin: '示例',
+      stem: '矛盾的两个基本属性是（ ）。',
+      options: [['A', '同一性与斗争性'], ['B', '普遍性与特殊性'], ['C', '绝对性与相对性'], ['D', '对立性与统一性']],
+      answer: 'A',
+      analysis: '矛盾的基本属性是同一性和斗争性。普遍性与特殊性是矛盾问题的精髓（共性与个性），属于另一层设问，B 为高频干扰项。'
+    },
+    {
+      id: 'q-zz-2', subjectId: 'zz', sectionId: 'zz-sg', kpId: 'kp-zz-7', type: 'single', origin: '示例',
+      stem: '中国共产党独立领导武装斗争、创建人民军队开始于（ ）。',
+      options: [['A', '南昌起义'], ['B', '秋收起义'], ['C', '广州起义'], ['D', '三湾改编']],
+      answer: 'A',
+      analysis: '1927 年 8 月 1 日南昌起义打响了武装反抗国民党反动派的第一枪，是独立领导武装斗争和创建人民军队的开始；三湾改编解决的是"党指挥枪"的组织原则。'
+    },
+    {
+      id: 'q-zz-3', subjectId: 'zz', sectionId: 'zz-sx', kpId: 'kp-zz-10', type: 'single', origin: '示例',
+      stem: '我国宪法规定，中华人民共和国的根本制度是（ ）。',
+      options: [['A', '人民代表大会制度'], ['B', '社会主义制度'], ['C', '民主集中制'], ['D', '中国共产党领导的多党合作制度']],
+      answer: 'B',
+      analysis: '社会主义制度是根本制度；人民代表大会制度是根本政治制度（A）。"根本制度"与"根本政治制度"一字之差，是最典型的审题陷阱。'
+    },
+    {
+      id: 'q-zz-4', subjectId: 'zz', sectionId: 'zz-my', kpId: 'kp-zz-2', type: 'subjective', origin: '示例',
+      stem: '简答题：为什么说实践是检验真理的唯一标准？',
+      answer: '要点提示：①真理的本性是主观与客观相符合，检验标准必须联结主观与客观；②实践是直接现实性的活动，能够把认识对象变成现实结果从而对照检验；③逻辑证明等辅助手段最终仍要接受实践检验；④实践标准的确定性与不确定性统一。',
+      analysis: '答"本性 + 直接现实性 + 唯一性（逻辑证明不替代）"三个层次即可拿主体分。'
+    },
+    {
+      id: 'q-e1-1', subjectId: 'e1', sectionId: 'e1-kp', kpId: 'kp-e1-2', type: 'single', origin: '示例',
+      stem: 'The experimental results ______ with those reported in earlier studies, which lends credibility to the conclusion.',
+      options: [['A', 'correlate'], ['B', 'contaminate'], ['C', 'aggravate'], ['D', 'deteriorate']],
+      answer: 'A',
+      analysis: 'correlate with 意为"与……相关联/吻合"，符合"结果与既往研究一致从而增强可信度"的语境。B 污染、C 加剧、D 恶化均与 lends credibility 逻辑相悖。'
+    },
+    {
+      id: 'q-e1-2', subjectId: 'e1', sectionId: 'e1-kp', kpId: 'kp-e1-1', type: 'single', origin: '示例',
+      stem: 'His argument rests on a ______ premise, so the conclusion cannot be trusted.',
+      options: [['A', 'sound'], ['B', 'flawed'], ['C', 'self-evident'], ['D', 'hypothetical']],
+      answer: 'B',
+      analysis: '后半句"结论不可信"决定前提有缺陷，flawed 正确。hypothetical（假设性的）为中性词，推不出"不可信"，D 是典型的程度偷换干扰。'
+    },
+    {
+      id: 'q-e1-3', subjectId: 'e1', sectionId: 'e1-yd', kpId: 'kp-e1-3', type: 'single', origin: '示例',
+      stem: 'Newton\'s third law states that for every action there is an equal and opposite reaction, ______ applies to interactions between bodies rather than single bodies.',
+      options: [['A', 'which'], ['B', 'what'], ['C', 'that'], ['D', 'it']],
+      answer: 'A',
+      analysis: '逗号后是非限制性定语从句，指代前面整个主句内容，只能用 which。that 不能引导非限制性定语从句（C 为高频语法陷阱），what 不能指代先行句（B）。'
+    },
+    {
+      id: 'q-e1-4', subjectId: 'e1', sectionId: 'e1-fy', kpId: 'kp-e1-8', type: 'subjective', origin: '示例',
+      stem: '翻译题：It is now widely accepted that a healthy diet, rather than supplements, plays the decisive role in preventing chronic disease.',
+      answer: '参考译文：如今人们普遍认同，在预防慢性疾病方面起决定性作用的是健康饮食，而非营养补剂。',
+      analysis: '要点：①形式主语 It 转译为"人们普遍认同"；②rather than 插入语用"……而非……"处理；③play the decisive role in 译"在……中起决定性作用"。'
+    },
+    {
+      id: 'q-m2-1', subjectId: 'm2', sectionId: 'm2-gs', kpId: 'kp-m2-1', type: 'single', origin: '示例',
+      stem: '当 x→0 时，lim (sin 3x)/(5x) =（ ）。',
+      options: [['A', '3/5'], ['B', '5/3'], ['C', '1'], ['D', '0']],
+      answer: 'A',
+      analysis: '等价无穷小 sin 3x ~ 3x，故极限 = 3x/5x = 3/5。B 是倒数型陷阱，C 忽略了系数直接套 lim sin x/x=1。'
+    },
+    {
+      id: 'q-m2-2', subjectId: 'm2', sectionId: 'm2-xd', kpId: 'kp-m2-6', type: 'single', origin: '示例',
+      stem: '设 A 为 3 阶方阵且 |A| = 2，则 |2A⁻¹| =（ ）。',
+      options: [['A', '4'], ['B', '2'], ['C', '1'], ['D', '8']],
+      answer: 'A',
+      analysis: '|kA| = kⁿ|A|（n 为阶数），|A⁻¹| = 1/|A|，故 |2A⁻¹| = 2³ × (1/2) = 4。易错点：忘记系数要取 n 次方。'
+    },
+    {
+      id: 'q-m2-3', subjectId: 'm2', sectionId: 'm2-gl', kpId: 'kp-m2-9', type: 'single', origin: '示例',
+      stem: '设 X ~ N(1, 4)，则 P(X < 1) =（ ）。',
+      options: [['A', '0.5'], ['B', '0.25'], ['C', '0.75'], ['D', '1']],
+      answer: 'A',
+      analysis: '正态分布关于均值对称，P(X < μ) = 0.5。此处 4 是方差不是标准差，但对称性与方差数值无关，B/C 是用错分布函数表的典型结果。'
+    },
+    {
+      id: 'q-m2-4', subjectId: 'm2', sectionId: 'm2-gs', kpId: 'kp-m2-3', type: 'subjective', origin: '示例',
+      stem: '计算题：求不定积分 ∫ x·eˣ dx。',
+      answer: '参考答案：∫x·eˣ dx = eˣ(x − 1) + C。',
+      analysis: '分部积分：u = x，dv = eˣdx → = x·eˣ − ∫eˣdx = eˣ(x−1) + C。自评时重点检查：漏写 +C、符号错成 eˣ(x+1)。'
+    },
+    {
+      id: 'q-dk-1', subjectId: 'dks', sectionId: 'dks-ks', kpId: 'kp-dk-1', type: 'single', origin: '示例',
+      stem: '地壳中含量（质量分数）最高的元素是（ ）。',
+      options: [['A', '氧'], ['B', '硅'], ['C', '铝'], ['D', '铁']],
+      answer: 'A',
+      analysis: '地壳元素丰度前几位：O > Si > Al > Fe。氧约占地壳质量的近一半，注意题目问"地壳"而非"整个地球"（整个地球含量最高的是铁）。'
+    },
+    {
+      id: 'q-dk-2', subjectId: 'dks', sectionId: 'dks-ks', kpId: 'kp-dk-1', type: 'single', origin: '示例',
+      stem: '摩氏硬度计中，硬度等级为 6 的标准矿物是（ ）。',
+      options: [['A', '正长石'], ['B', '石英'], ['C', '磷灰石'], ['D', '方解石']],
+      answer: 'A',
+      analysis: '摩氏硬度：滑石1 石膏2 方解石3 萤石4 磷灰石5 正长石6 石英7 黄玉8 刚玉9 金刚石10。B 为 7，C 为 5，D 为 3。'
+    },
+    {
+      id: 'q-dk-3', subjectId: 'dks', sectionId: 'dks-ks', kpId: 'kp-dk-2', type: 'single', origin: '示例',
+      stem: '三大类岩石中，由岩浆冷却凝固直接形成的是（ ）。',
+      options: [['A', '沉积岩'], ['B', '变质岩'], ['C', '岩浆岩'], ['D', '碎屑岩']],
+      answer: 'C',
+      analysis: '岩浆岩（火成岩）由岩浆冷凝形成；碎屑岩属于沉积岩的一个子类，D 为层级混淆干扰项。'
+    },
+    {
+      id: 'q-dk-4', subjectId: 'dks', sectionId: 'dks-ks', kpId: 'kp-dk-3', type: 'subjective', origin: '示例',
+      stem: '简述题：概述岩石圈物质循环中三大类岩石相互转化的主要过程。',
+      answer: '要点提示：①岩浆冷却凝固→岩浆岩；②风化、搬运、沉积、固结成岩→沉积岩；③高温高压（变质作用）→变质岩；④重熔再生回到岩浆；⑤各类岩石都可经外力或变质作用改造，循环内力作用（岩浆活动、变质作用）与外力作用共同驱动。',
+      analysis: '按"岩浆为起点、三大转化路径、重熔闭合"结构作答，避免只背单向箭头。'
+    },
+    {
+      id: 'q-ce-1', subjectId: 'ce', sectionId: 'ce-ci', kpId: 'kp-ce-3', type: 'single', origin: '示例',
+      stem: 'The government has taken effective ______ to curb rising inflation.',
+      options: [['A', 'measures'], ['B', 'manners'], ['C', 'motions'], ['D', 'pursuits']],
+      answer: 'A',
+      analysis: 'take measures to do sth 是固定搭配"采取措施"。B manners 礼貌、C motions 动作/议案、D pursuits 追求，均为形近词干扰。'
+    },
+    {
+      id: 'q-ce-2', subjectId: 'ce', sectionId: 'ce-yue', kpId: 'kp-ce-3', type: 'single', origin: '示例',
+      stem: 'The new findings shed light on the long-standing mystery. 「shed light on」在此最接近：',
+      options: [['A', 'obscure'], ['B', 'clarify'], ['C', 'ignore'], ['D', 'complicate']],
+      answer: 'B',
+      analysis: 'shed light on = 使……更清楚/弄明白，对应 clarify。阅读判断题的 T/F/NG 常以这种短语级同义替换出题。'
+    },
+    {
+      id: 'q-ce-3', subjectId: 'ce', sectionId: 'ce-xie', kpId: 'kp-ce-5', type: 'single', origin: '示例',
+      stem: 'Not only ______ the door, but he also broke the window.',
+      options: [['A', 'he damaged'], ['B', 'he had damaged'], ['C', 'did he damage'], ['D', 'damaged he']],
+      answer: 'C',
+      analysis: 'not only 位于句首时该分句部分倒装：did he damage。写作 Task 2 中此句型是加分结构，D 为全倒装错误形式。'
+    },
+    {
+      id: 'q-ce-4', subjectId: 'ce', sectionId: 'ce-xie', kpId: 'kp-ce-5', type: 'subjective', origin: '示例',
+      stem: '中译英（写作素材）：尽管远程办公提升了灵活性，但它也削弱了团队凝聚力。',
+      answer: '参考译文：While remote working has enhanced flexibility, it has also weakened team cohesion. / ...eroded a sense of team cohesion.',
+      analysis: '自评点：①让步连词 While / Although 用对且不搭配 but；②"削弱"用 weaken / erode / undermine；③"团队凝聚力"用 team cohesion。'
+    }
+  ],
+
+  tasks: [],
+  wrong: [],
+  logs: [],
+  refs: [],
+  backups: []
+};
+
+</script>
+<script>
+/* SECTION: core —— 本地存储、状态模型、路由、图表、导入解析、备份 */
+(function () {
+  'use strict';
+  var KEY = 'exam-wo…b-v1';
+
+  /* ---------- 状态模型 ---------- */
+  function blank() {
+    return {
+      version: 1,
+      settings: {
+        ai: { baseUrl: '', apiKey: '', model: '' },
+        goalDaily: 120
+      },
+      subjects: [],
+      kps: [],
+      questions: [],
+      wrongs: [],
+      logs: [],
+      tasks: [],
+      refs: [],
+      backups: [],
+      chat: [],
+      meta: {},
+      ui: { tab: 'overview', subject: 'zz', sub: 'kp' }
+    };
+  }
+
+  function seedState() {
+    var s = blank();
+    var SD = window.SEED;    s.subjects = SD.subjects.map(function (o) {
+      return { id: o.id, name: o.name, short: o.short, color: o.color, examDate: o.examDate || '', goalDaily: 90, sections: o.sections.map(function (x) { return { id: x.id, name: x.name }; }) };
+    });
+    s.kps = SD.kps.map(function (k) { return Object.assign({}, k); });
+    s.questions = SD.questions.map(function (q) { return Object.assign({}, q, { options: (q.options || []).map(function (p) { return { k: p[0], v: p[1] }; }) }); });
+    return s;
+  }
+
+  var DB;
+  var MIRROR = KEY + '.mirror';
+  var SALVAGE = KEY + '.salvage';
+
+  /* 主存档 + 自动镜像双写：任一可读即可恢复，损坏原件另存一份供人工取回 */
+  function readRaw(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function writeRaw(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+
+  function parseStore(raw) {
+    if (!raw) return null;
+    var p = JSON.parse(raw);
+    if (!p || !Array.isArray(p.subjects) || !p.subjects.length) throw new Error('结构不完整');
+    return p;
+  }
+  function hydrate(p) {
+    DB = Object.assign(blank(), p);
+    DB.settings = Object.assign({ ai: { baseUrl: '', apiKey: '', model: '' }, goalDaily: 120 }, p.settings || {});
+    DB.ui = Object.assign({ tab: 'overview', subject: 'zz', sub: 'kp' }, p.ui || {});
+    if (!DB.settings.ai) DB.settings.ai = { baseUrl: '', apiKey: '', model: '' };
+    return DB;
+  }
+
+  function salvageStore(rawMain, rawMirror) {
+    var obj = {};
+    if (rawMain) obj.main = rawMain;
+    if (rawMirror) obj.mirror = rawMirror;
+    if (obj.main || obj.mirror) writeRaw(SALVAGE, JSON.stringify(obj));
+  }
+
+  function load() {
+    var rawMain = readRaw(KEY), rawMirror = readRaw(MIRROR);
+    var from = 'main', firstOpen = false;
+    if (rawMain) {
+      try { hydrate(parseStore(rawMain)); }
+      catch (e) {
+        from = 'mirror';
+        try { hydrate(parseStore(rawMirror)); }
+        catch (e2) {
+          DB = seedState();
+          salvageStore(rawMain, rawMirror);
+          setTimeout(function () {
+            toast('本机存档读取异常，已重建空白工作台；两份原始数据均保留在浏览器内，可在设置里取回', 'bad', 9000);
+          }, 500);
+          save();
+          return;
+        }
+      }
+    } else {
+      DB = seedState();
+      firstOpen = true;
+      if (rawMirror) { try { hydrate(parseStore(rawMirror)); from = 'mirror'; } catch (e) { /* 镜像也无效：按首次打开处理 */ } }
+    }
+    if (from === 'mirror') {
+      save();
+      setTimeout(function () { toast(firstOpen ? '主存档缺失，已从自动镜像恢复你的历史记录' : '主存档不可读，已从自动镜像恢复你的历史记录', 'ok', 5000); }, 500);
+    } else if (firstOpen) {
+      save();
+    }
+    DB.meta = DB.meta || {};
+    DB.meta.lastOpen = new Date().toISOString();
+    saveMirror();
+  }
+
+  function saveMirror() {
+    try {
+      DB.meta = DB.meta || {};
+      DB.meta.mirrorAt = new Date().toISOString();
+      writeRaw(MIRROR, JSON.stringify(DB));
+    } catch (e) { /* 镜像失败不影响主存档 */ }
+  }
+
+  function save() {
+    DB.meta = DB.meta || {};
+    DB.meta.mirrorAt = new Date().toISOString();
+    var json;
+    try { json = JSON.stringify(DB); }
+    catch (e) { toast('保存失败：数据无法序列化，请先到设置里导出备份', 'bad'); return false; }
+    var ok = writeRaw(KEY, json);
+    writeRaw(MIRROR, json);   /* 镜像写不进也不影响主存档 */
+    if (!ok) { toast('保存失败：浏览器存储空间不足或被限制，请用普通窗口打开，并先在设置里导出备份', 'bad'); return false; }
+    return true;
+  }
+
+  /* 彻底重置：主存档 + 镜像 + 损坏副本一起清，否则下次打开会被镜像复活 */
+  function hardReset() {
+    [KEY, MIRROR, SALVAGE].forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    load();
+  }
+
+  function storeStatus() {
+    var rawMain = readRaw(KEY), rawMirror = readRaw(MIRROR), rawSal = readRaw(SALVAGE);
+    function size(s) { return s ? Math.round(s.length / 1024 * 10) / 10 : 0; }
+    function probe(s) {
+      if (!s) return { ok: false, time: null };
+      try { return { ok: true, time: (parseStore(s).meta || {}).mirrorAt || null }; }
+      catch (e) { return { ok: false, time: null }; }
+    }
+    var pMain = probe(rawMain), pMirror = probe(rawMirror);
+    var salvaged = false;
+    if (rawSal) { try { salvaged = Object.keys(JSON.parse(rawSal)).length > 0; } catch (e) { salvaged = !!rawSal; } }
+    return {
+      mainBytes: size(rawMain), mirrorBytes: size(rawMirror),
+      mainOk: pMain.ok, mirrorOk: pMirror.ok,
+      mirrorTime: pMirror.time,
+      salvaged: salvaged,
+      lastOpen: DB && DB.meta ? DB.meta.lastOpen : null
+    };
+  }
+
+  /* 取回损坏副本：把抢救下来的主/镜像内容导出成文件，供人工或找我修复 */
+  function exportSalvage() {
+    var raw = readRaw(SALVAGE);
+    if (!raw) { toast('浏览器内没有需要抢救的数据副本', 'bad'); return null; }
+    var name = '备考工作台-抢救副本-' + today() + '.json';
+    var blob = new Blob([raw], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); if (a.parentNode) a.parentNode.removeChild(a); }, 1500);
+    return name;
+  }
+
+  /* ---------- 小工具 ---------- */  function uid(p) { return (p || 'x') + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function daysLeft(iso) {
+    if (!iso) return null;
+    var a = new Date(iso + 'T00:00:00'), b = new Date(today() + 'T00:00:00');
+    return Math.round((a - b) / 86400000);
+  }
+  function subjectById(id) { for (var i = 0; i < DB.subjects.length; i++) if (DB.subjects[i].id === id) return DB.subjects[i]; return DB.subjects[0]; }
+  function sectionName(sub, id) {
+    if (!sub) return '未分节';
+    for (var i = 0; i < sub.sections.length; i++) if (sub.sections[i].id === id) return sub.sections[i].name;
+    return '未分节';
+  }
+  function kpById(id) { for (var i = 0; i < DB.kps.length; i++) if (DB.kps[i].id === id) return DB.kps[i]; return null; }
+  function qById(id) { for (var i = 0; i < DB.questions.length; i++) if (DB.questions[i].id === id) return DB.questions[i]; return null; }
+  function wById(id) { for (var i = 0; i < DB.wrongs.length; i++) if (DB.wrongs[i].id === id) return DB.wrongs[i]; return null; }
+
+  /* ---------- DOM ---------- */
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === 'class') n.className = attrs[k];
+      else if (k === 'html') n.innerHTML = attrs[k];
+      else if (k === 'text') n.textContent = attrs[k];
+      else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+      else if (attrs[k] === null || attrs[k] === undefined) { /* 跳过 */ }
+      else if (k === 'value' && (tag === 'textarea' || tag === 'input')) n.value = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+
+  var toastBox = null;
+  function toast(msg, kind, ms) {
+    if (!toastBox) toastBox = document.getElementById('toasts');
+    var hold = ms || 2100;
+    var t = el('div', { class: 'toast ' + (kind || ''), text: msg });
+    toastBox.appendChild(t);
+    setTimeout(function () { t.style.opacity = '0'; t.style.transition = 'opacity .25s'; }, hold);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, hold + 400);
+  }
+
+  function modal(opts) {
+    var root = document.getElementById('modalroot');
+    var mask = el('div', { class: 'mask' });
+    function close() { if (mask.parentNode) root.removeChild(mask); document.removeEventListener('keydown', onKey); }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    var box = el('div', { class: 'modal' }, [el('h3', { text: opts.title })].concat(opts.body || []));
+    if (opts.footer) box.appendChild(el('div', { class: 'ft' }, opts.footer));
+    mask.appendChild(box);
+    mask.addEventListener('mousedown', function (e) { if (e.target === mask) close(); });
+    root.appendChild(mask);
+    document.addEventListener('keydown', onKey);
+    return { close: close, box: box };
+  }
+
+  function confirmBox(title, msg, onYes, yesText) {
+    var m = modal({
+      title: title,
+      body: [el('p', { text: msg })],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', { class: 'btn primary', text: yesText || '确定', onclick: function () { m.close(); onYes(); } })
+      ]
+    });
+    return m;
+  }
+
+  /* ---------- 图表（纯 CSS/SVG，无外部库） ---------- */
+  function donut(pct, label, color) {
+    var r = 46, c = 2 * Math.PI * r, off = c * (1 - Math.max(0, Math.min(100, pct)) / 100);
+    var svg = '<svg width="118" height="118" viewBox="0 0 118 118" aria-hidden="true">' +
+      '<circle cx="59" cy="59" r="' + r + '" fill="none" stroke="#eef1f6" stroke-width="12"/>' +
+      '<circle cx="59" cy="59" r="' + r + '" fill="none" stroke="' + (color || 'var(--accent)') + '" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"/></svg>';
+    return el('div', { class: 'donut' }, [
+      el('div', { html: svg }),
+      el('div', { class: 'ctr', html: '<b class="num">' + Math.round(pct) + '%</b><span>' + esc(label) + '</span>' })
+    ]);
+  }
+  function hbars(rows, max) {
+    var hi = max || 1;
+    rows.forEach(function (r) { if (r.value > hi) hi = r.value; });
+    var wrap = el('div');
+    rows.forEach(function (r) {
+      wrap.appendChild(el('div', {
+        class: 'hbar',
+        html: '<span class="t" title="' + esc(r.label) + '">' + esc(r.label) + '</span>' +
+          '<span class="tr"><i class="fl" style="width:' + (hi ? (r.value / hi * 100) : 0).toFixed(1) + '%;background:' + (r.color || 'var(--accent)') + '"></i></span>' +
+          '<span class="v num">' + esc(r.text != null ? r.text : r.value) + '</span>'
+      }));
+    });
+    return wrap;
+  }
+  function vbars(rows, unit) {
+    var hi = 1;
+    rows.forEach(function (r) { if (r.value > hi) hi = r.value; });
+    var wrap = el('div', { class: 'vbars' });
+    rows.forEach(function (r) {
+      var h = r.value ? Math.max(3, r.value / hi * 92) : 2;
+      wrap.appendChild(el('div', { class: 'col' }, [
+        el('div', { class: 'val num', text: r.value ? (r.value + (unit || '')) : '' }),
+        el('div', { class: 'bar' + (r.value ? '' : ' zero'), style: 'height:' + h + 'px' }),
+        el('div', { class: 'cap', text: r.label })
+      ]));
+    });
+    return wrap;
+  }
+  function stackBar(parts) {
+    var total = parts.reduce(function (a, p) { return a + p.value; }, 0) || 1;
+    var w = el('div', { class: 'stack' });
+    parts.forEach(function (p) {
+      w.appendChild(el('i', { style: 'width:' + (p.value / total * 100).toFixed(1) + '%;background:' + p.color, title: p.label + ' ' + p.value }));
+    });
+    return w;
+  }
+
+  /* ---------- 统计口径 ---------- */
+  function subjectStats(sid) {
+    var kps = DB.kps.filter(function (k) { return k.subjectId === sid; });
+    var mast = kps.filter(function (k) { return k.status === 2; }).length;
+    var wq = DB.wrongs.filter(function (w) { return w.subjectId === sid; });
+    var qn = DB.questions.filter(function (q) { return q.subjectId === sid; }).length;
+    var logs = DB.logs.filter(function (l) { return l.subjectId === sid; });
+    var mins = logs.reduce(function (a, l) { return a + (l.minutes || 0); }, 0);
+    var answered = logs.reduce(function (a, l) { return a + (l.answered || 0); }, 0);
+    var right = logs.reduce(function (a, l) { return a + (l.right || 0); }, 0);
+    var acc = answered ? Math.round(right / answered * 100) : null;
+    var due = kps.filter(function (k) { return k.status === 3; }).length;
+    var t = today();
+    var todayLogs = logs.filter(function (l) { return l.date === t; });
+    return {
+      kpTotal: kps.length, mastered: mast, masteryRate: kps.length ? mast / kps.length * 100 : 0,
+      wrongCount: wq.length, dueCount: due, qCount: qn,
+      minutes: mins, answered: answered, accuracy: acc, todayDone: todayLogs.length > 0,
+      todayMinutes: todayLogs.reduce(function (a, l) { return a + (l.minutes || 0); }, 0)
+    };
+  }
+  function streakDays() {
+    var set = {};
+    DB.logs.forEach(function (l) { if (l.minutes > 0) set[l.date] = 1; });
+    var n = 0, d = new Date();
+    for (;;) {
+      var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      if (set[iso]) { n++; d.setDate(d.getDate() - 1); }
+      else if (iso === today()) { d.setDate(d.getDate() - 1); }
+      else break;
+      if (n > 400) break;
+    }
+    return n;
+  }
+  function last7() {
+    var out = [];
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      var mins = DB.logs.filter(function (l) { return l.date === iso; }).reduce(function (a, l) { return a + (l.minutes || 0); }, 0);
+      out.push({ label: (d.getMonth() + 1) + '/' + d.getDate(), value: mins });
+    }
+    return out;
+  }
+  function causeCounts(sid) {
+    var map = {};
+    window.SEED.errorCauses.forEach(function (c) { map[c] = 0; });
+    DB.wrongs.forEach(function (w) {
+      if (sid && w.subjectId !== sid) return;
+      (w.causes && w.causes.length ? w.causes : ['未分类']).forEach(function (c) { map[c] = (map[c] || 0) + 1; });
+    });
+    return Object.keys(map).filter(function (k) { return map[k]; })
+      .map(function (k) { return { label: k, value: map[k], color: k === '未分类' ? '#8a95a6' : null }; })
+      .sort(function (a, b) { return b.value - a.value; });
+  }
+
+  /* ---------- 真题导入解析 ---------- */
+  function splitOptions(txt) {
+    var re = /(?:^|\s|[（(【])([A-H])(?:[\.、．）)、:：]|[\s]{1})/g, hits = [], m;
+    while ((m = re.exec(txt)) !== null) {
+      if (m.index > txt.length - 2) continue;
+      var letter = m[1], pos = m.index + m[0].length;
+      while (pos < txt.length && txt[pos] === ' ') pos++;
+      hits.push({ k: letter, from: pos, letterPos: m.index });
+    }
+    if (hits.length < 2) return null;
+    var letters = hits.map(function (h) { return h.k; }).join('');
+    if (!/^[A-H]+$/.test(letters)) return null;
+    var first = hits[0].letterPos;
+    var pre = txt.slice(0, first).trim();
+    if (pre.length < 4) return null;
+    var opts = [];
+    for (var i = 0; i < hits.length; i++) {
+      var end = i + 1 < hits.length ? hits[i + 1].letterPos : txt.length;
+      var v = txt.slice(hits[i].from, end).replace(/[\s;；]+$|（\s*）/g, '').trim();
+      if (!v) return null;
+      opts.push({ k: hits[i].k, v: v });
+    }
+    return { stem: pre, options: opts };
+  }
+
+  function parseExamText(text) {
+    var lines = String(text).split(/\r?\n/);
+    var recs = [], cur = null, fails = [];
+    var lastNum = -1, headType = '';
+    function flush() {
+      if (!cur) return;
+      if (!cur.stem) { fails.push({ line: cur.lineNo, reason: '找不到题干' }); }
+      else if (!cur.answer) { fails.push({ line: cur.lineNo, reason: '缺答案：题干「' + cur.stem.slice(0, 16) + '…」' }); }
+      else if (cur.type === 'single' && cur.options.length < 2) {
+        fails.push({ line: cur.lineNo, reason: '答案像选项字母但没解析出选项：' + cur.stem.slice(0, 16) + '…' });
+        recs.push(Object.assign({}, cur, { type: 'subjective', options: [] }));
+      } else recs.push(cur);
+      cur = null;
+    }
+    /* 判断答案串是否只是选项字母：单选 "A" / 多选 "AC" / 分隔 "A、C" */
+    function asOptionLetters(av, hasOpts) {
+      if (!hasOpts) return null;
+      if (/^[A-H]$/.test(av)) return av;
+      if (/^[A-H](?:[\s、,，/\.]+[A-H]){1,3}$/.test(av)) return av.replace(/[^A-H]/g, '').slice(0, 1);
+      return null;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      var t = lines[i].trim();
+      if (!t) continue;
+      /* 卷面大标题（一、单项选择题）跳过并记住该段题型 */
+      var mHead = t.match(/^[一二三四五六七八九十]+[、.．]\s*(?:[（(][^)）]{1,10}[)）]\s*)?(单项选择|多项选择|填空|判断|简答|论述|名词解释|翻译|阅读|完形填空|计算|证明|材料分析|问答)(?:题)?\s*$/);
+      if (mHead) { headType = /单项选择|判断|多选/.test(mHead[1]) ? 'single' : 'subjective'; continue; }
+
+      var mPlain = t.match(/^第\s*(\d{1,3})\s*[题小]\s*(.*)$/) ||
+        t.match(/^(\d{1,3})\s*[\.、．]\s*(.*)$/) ||
+        t.match(/^(\d{1,3})[）)]\s*(.*)$/);
+      if (mPlain) mPlain[2] = String(mPlain[2] || '').replace(/^[:：\.、）)）]\s*/, '');
+      var mParen = t.match(/^[（(](\d{1,3})[)）]\s*[:：\.、]?\s*(.*)$/);
+      /* 括号编号：只有等于上一题号 +1（或尚无题号）时才算新题，否则是答案里的（1）（2）分点 */
+      var mNum = null;
+      if (mPlain && mPlain[2].length > 0) mNum = mPlain;
+      else if (mParen && mParen[2].length > 0 && (lastNum < 0 || parseInt(mParen[1], 10) === lastNum + 1)) mNum = mParen;
+
+      var mAns = t.match(/^(?:\*{0,2})(?:【\s*(?:参考|正确)?答案\s*】|答案|参考答案|正确答案|Answer)\s*[:：]?\s*(.*)$/i);
+      var mAna = t.match(/^(?:\*{0,2})(?:【\s*(?:答案解析|解析|详解)\s*】|解析|详解|答案解析|说明|Analysis|Explanation)\s*[:：]?\s*(.*)$/i);
+      var mType = t.match(/^(?:【?\s*(?:题型|题目类型)\s*】?\s*[:：])\s*(.*)$/i);
+      var mKp = t.match(/^(?:【?\s*(?:知识点|章节|所属章节|大纲|考点)\s*】?\s*[:：])\s*(.*)$/);
+
+      if (mNum) {
+        flush();
+        lastNum = parseInt(mNum[1], 10);
+        var body = mNum[2];
+        var so = splitOptions(body);
+        cur = {
+          stem: so ? so.stem : body.replace(/\s+$/, ''),
+          options: so ? so.options : [],
+          answer: '', analysis: '', type: so ? 'single' : (headType || 'subjective'),
+          lineNo: i + 1
+        };
+      } else if (mAns) {
+        if (!cur) cur = { stem: '', options: [], answer: '', analysis: '', type: headType || 'single', lineNo: i + 1 };
+        var av = mAns[1].trim();
+        var letters = asOptionLetters(av, cur.options.length >= 2);
+        if (letters) { cur.answer = letters; cur.type = 'single'; }
+        else {
+          /* 无选项或非字母答案：整串保留（H2O / 要点句 / 译文） */
+          if (/^[A-H]$/.test(av) && cur.options.length < 2 && cur.type === 'single') cur.type = 'subjective';
+          cur.answer = av;
+        }
+      } else if (mAna) {
+        if (!cur) cur = { stem: '', options: [], answer: '', analysis: '', type: headType || 'subjective', lineNo: i + 1 };
+        cur.analysis = (cur.analysis ? cur.analysis + '\n' : '') + mAna[1].trim();
+      } else if (mType) {
+        if (cur) cur.type = /单选|判断|客观|多选/.test(mType[1]) ? 'single' : 'subjective';
+      } else if (mKp) {
+        if (cur) cur.sectionLabel = mKp[1].trim();
+      } else if (cur) {
+        /* 新题起始但题号丢失时，不要把上一题选项吞进来：字母须紧接上一选项 */
+        var isOpt = /^([A-H])(?:[\s]{0,2})(?:[\.、．）)、:：]\s*)(.+)$/.exec(t);
+        if (isOpt) {
+          if (cur.options.length === 0) {
+            if (isOpt[1] === 'A') { cur.options.push({ k: 'A', v: isOpt[2].trim() }); cur.type = 'single'; }
+            else {
+              var parts = splitOptions(cur.stem + ' ' + t);
+              if (parts) { cur.stem = parts.stem; cur.options = parts.options; cur.type = 'single'; }
+              else cur.options.push({ k: isOpt[1], v: isOpt[2].trim() });
+            }
+          } else if (isOpt[1].charCodeAt(0) === cur.options[cur.options.length - 1].k.charCodeAt(0) + 1) {
+            cur.options.push({ k: isOpt[1], v: isOpt[2].trim() }); cur.type = 'single';
+          } else if (cur.answer) {
+            cur.analysis = (cur.analysis ? cur.analysis + '\n' : '') + t;
+          } else {
+            cur.options[cur.options.length - 1].v += ' ' + t;
+          }
+        } else if (cur.options.length === 0 && !cur.answer) {
+          cur.stem += (/[：:？。？]$/.test(cur.stem) ? '' : ' ') + t;
+        } else if (cur.answer) {
+          /* 答案之后的普通行归入解析（续写），避免污染题干 */
+          cur.analysis = (cur.analysis ? cur.analysis + '\n' : '') + t;
+        } else {
+          cur.options[cur.options.length - 1].v += ' ' + t;
+        }
+      } else {
+        fails.push({ line: i + 1, reason: '无法归入任何一题（该行出现在第一道题号之前）：' + t.slice(0, 22) });
+      }
+    }
+    flush();
+    recs.forEach(function (r) { if (r.type !== 'single') r.options = r.options || []; });
+    return { recs: recs, fails: fails };
+  }
+
+  function parseCsv(text) {
+    var rows = [];
+    var cell = '', row = [], q = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (q) {
+        if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+        else cell += ch;
+      } else {
+        if (ch === '"') q = true;
+        else if (ch === ',') { row.push(cell); cell = ''; }
+        else if (ch === '\n' || ch === '\r') {
+          if (ch === '\r' && text[i + 1] === '\n') i++;
+          row.push(cell); cell = '';
+          if (row.some(function (x) { return x.trim(); })) rows.push(row);
+          row = [];
+        } else cell += ch;
+      }
+    }
+    row.push(cell);
+    if (row.some(function (x) { return x.trim(); })) rows.push(row);
+    if (!rows.length) return { recs: [], fails: [{ line: 0, reason: '文件为空' }] };
+    var head = rows[0].map(function (h) { return h.trim(); });
+    var idx = {};
+    var alias = {
+      stem: ['题干', '题目', '问题', '内容', 'stem', 'question'],
+      options: ['选项', 'options'],
+      a: ['选项A', 'A', '选项 A', 'a'],
+      b: ['选项B', 'B', '选项 B', 'b'],
+      c: ['选项C', 'C', '选项 C', 'c'],
+      d: ['选项D', 'D', '选项 D', 'd'],
+      answer: ['答案', '正确答案', '参考答案', 'answer'],
+      analysis: ['解析', '答案解析', '说明', 'analysis', 'explanation'],
+      section: ['章节', '所属章节', '知识点', '大纲'],
+      type: ['题型', 'type']
+    };
+    Object.keys(alias).forEach(function (k) {
+      for (var i2 = 0; i2 < head.length; i2++) {
+        var h = head[i2].toLowerCase();
+        if (alias[k].some(function (x) { return h === x.toLowerCase(); })) { idx[k] = i2; break; }
+      }
+    });
+    var recs = [], fails = [];
+    if (idx.stem === undefined) return { recs: [], fails: [{ line: 1, reason: '表头没有「题干」列，现有列：' + head.join(' / ') }] };
+    for (var r = 1; r < rows.length; r++) {
+      var g = function (k) { return idx[k] === undefined ? '' : (rows[r][idx[k]] || '').trim(); };
+      var stem = g('stem');
+      var hasAny = rows[r].some(function (x) { return (x || '').trim(); });
+      if (!stem) { if (hasAny) fails.push({ line: r + 1, reason: '该行缺少题干内容，已跳过' }); continue; }
+      var opts = [];
+      ['a', 'b', 'c', 'd', 'e'].forEach(function (k, n) {
+        var v = g(k);
+        if (v) opts.push({ k: String.fromCharCode(65 + n), v: v });
+      });
+      if (!opts.length && g('options')) {
+        var so = splitOptions(stem + ' ' + g('options'));
+        if (so) { stem = so.stem; opts = so.options; }
+      }
+      var ans = (g('answer') || '').toUpperCase();
+      var apick = ans.match(/^([A-H])/);
+      var type = /多选|主观|简答|计算|证明|翻译|作文|名词解释|论述/.test(g('type')) ? 'subjective'
+        : (apick && opts.length >= 2 ? 'single' : 'subjective');
+      if (apick && type === 'single') ans = apick[1];
+      if (!ans) { fails.push({ line: r + 1, reason: '缺答案：' + stem.slice(0, 16) + '…' }); continue; }
+      recs.push({ stem: stem, options: opts, answer: ans, analysis: g('analysis'), type: type, sectionLabel: g('section'), lineNo: r + 1 });
+    }
+    return { recs: recs, fails: fails };
+  }
+
+  function parseFile(name, text) {
+    var n = (name || '').toLowerCase();
+    if (n.endsWith('.csv')) return parseCsv(text);
+    if (n.endsWith('.md') || n.endsWith('.markdown')) {
+      var cleaned = text.replace(/^[ \t]*#{1,6}[ \t]*/gm, '')
+        .replace(/^[ \t]*[-*+][ \t]+(?=[A-H](?:[\s]{0,2}[\.、．)）、:：]|[\s]))/gm, '')
+        .replace(/^[ \t]*[-*+][ \t]+/gm, ' ')
+        .replace(/^[ \t]*[ \t]*>?[ \t]*/gm, '')
+        .replace(/^[ \t]*>[ \t]*/gm, '')
+        .replace(/\*\*/g, '').replace(/`/g, '');
+      var r = parseExamText(cleaned);
+      r.isMd = true;
+      return r;
+    }
+    if (n.endsWith('.txt') || n.endsWith('.text') || n === '') {
+      var r2 = parseExamText(text);
+      if (r2.recs.length >= 2) return r2;
+      return parseCsvFallback(name, text, r2);
+    }
+    var r3 = parseExamText(text);
+    if (r3.recs.length) return r3;
+    return { recs: [], fails: [{ line: 0, reason: '不支持的格式（请用 txt / md / csv）' }] };
+  }
+  function parseCsvFallback(name, text, txtResult) {
+    if (text.indexOf(',') > -1) {
+      var c = parseCsv(text);
+      if (c.recs.length >= txtResult.recs.length) return c;
+    }
+    if (text.indexOf('\t') > -1) {
+      var conv = text.split(/\r?\n/).map(function (l) {
+        return l.split('\t').map(function (x) { return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(',');
+      }).join('\n');
+      var c2 = parseCsv(conv);
+      if (c2.recs.length) return c2;
+    }
+    return txtResult;
+  }
+
+  /* ---------- 章节名 → 章节 id（包含匹配计分） ---------- */
+  function matchSection(sub, label) {
+    if (!label) return sub.sections.length ? sub.sections[0].id : '';
+    var best = null, bestScore = 0;
+    var norm = function (s) { return String(s).toLowerCase().replace(/[\s（）()、，,．.]/g, ''); };
+    sub.sections.forEach(function (sec) {
+      var a = norm(sec.name), b = norm(label);
+      var sc = 0;
+      if (a === b) sc = 100;
+      else if (a.indexOf(b) > -1) sc = 60 + b.length;
+      else if (b.indexOf(a) > -1) sc = 50 + a.length;
+      else {
+        var m = 0;
+        for (var i = 0; i < a.length; i++) if (b.indexOf(a[i]) > -1) m++;
+        sc = m / Math.max(1, a.length) * 30;
+      }
+      if (sc > bestScore) { bestScore = sc; best = sec; }
+    });
+    return best ? best.id : sub.sections[0].id;
+  }
+
+  /* ---------- 备份 ---------- */
+  function exportBackup() {
+    var data = JSON.stringify(DB, null, 1);
+    var blob = new Blob([data], { type: 'application/json' });
+    var a = el('a', { href: URL.createObjectURL(blob), download: '备考工作台备份-' + today() + '.json' });
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 200);
+    return a.download;
+  }
+  function readImported(name, text) {
+    try {
+      var p = JSON.parse(text);
+      if (!p || !Array.isArray(p.subjects)) throw new Error('不是本工作台的备份文件');
+      var mode = p.mode || 'merge';
+      var inc = p.include || null;
+      var fn = p.filename || name;
+      if (mode === 'merge') {
+        var merged = 0, skipped = 0;
+        function absorb(field) {
+          var arr = p[field];
+          if (!Array.isArray(arr)) return;
+          var have = {};
+          DB[field].forEach(function (x) { have[x.id] = 1; });
+          arr.forEach(function (x) {
+            if (!x || !x.id) { skipped++; return; }
+            if (inc && inc.indexOf(field) === -1) { return; }
+            if (have[x.id]) { skipped++; return; }
+            DB[field].push(x); have[x.id] = 1; merged++;
+          });
+        }
+        ['kps', 'questions', 'wrongs', 'logs', 'tasks', 'refs', 'backups'].forEach(absorb);
+        save();
+        toast('合并导入完成：新增 ' + merged + ' 条，跳过重复 ' + skipped + ' 条');
+      } else {
+        DB = Object.assign(blank(), p);
+        DB.ui = Object.assign({ tab: 'overview', subject: 'zz', sub: 'kp' }, p.ui || {});
+        save();
+        toast('已整体恢复，备份来自 ' + fn);
+      }
+      render();
+    } catch (e) {
+      toast('导入失败：' + e.message, 'bad');
+    }
+  }
+
+  /* ---------- 路由 ---------- */
+  var TABS = [
+    { id: 'overview', name: '总览' },
+    { id: 'zz', name: '考研政治' },
+    { id: 'e1', name: '英语一' },
+    { id: 'm2', name: '数学二' },
+    { id: 'dks', name: '地科 880' },
+    { id: 'ce', name: '六级/雅思' },
+    { id: 'plan', name: '复习计划' },
+    { id: 'library', name: '资料库' },
+    { id: 'settings', name: '设置' }
+  ];
+  var views = {};
+  function registerView(id, fn) { views[id] = fn; }
+
+  function go(patch) {
+    Object.assign(DB.ui, patch || {});
+    save();
+    render();
+  }
+  function renderTabs() {
+    var box = document.getElementById('maintabs');
+    box.innerHTML = '';
+    TABS.forEach(function (t) {
+      var on = DB.ui.tab === t.id || (DB.ui.tab.indexOf('sub:') === 0 && DB.ui.tab.slice(4) === t.id);
+      box.appendChild(el('button', {
+        class: on ? 'on' : '', text: t.name,
+        onclick: function () { go({ tab: t.id === 'overview' ? 'overview' : (TABS.slice(1, 6).some(function (x) { return x.id === t.id; }) ? 'sub:' + t.id : t.id) }); }
+      }));
+    });
+  }
+  function renderCounts() {
+    var box = document.getElementById('countdowns');
+    box.innerHTML = '';
+    var list = DB.subjects.map(function (s) { return { s: s, d: daysLeft(s.examDate) }; });
+    var noDate = list.filter(function (x) { return x.d === null; }).length;
+    list.filter(function (x) { return x.d !== null && x.d >= 0; }).sort(function (a, b) { return a.d - b.d; }).slice(0, 4).forEach(function (x) {
+      box.appendChild(el('div', { class: 'cd' + (x.d <= 30 ? ' hot' : ''), html: '<b class="num">' + x.d + '</b><span>' + esc(x.s.short) + '天后</span>', title: x.s.name + ' 考试日 ' + x.s.examDate }));
+    });
+    if (noDate) box.appendChild(el('div', {
+      class: 'cd na', html: '<b>—</b><span>' + noDate + ' 科未设日期</span>',
+      title: '点击去设置考试日期', style: 'cursor:pointer'
+    })).addEventListener('click', function () { go({ tab: 'settings' }); });
+    else if (!list.some(function (x) { return x.d !== null; })) {
+      box.appendChild(el('div', { class: 'cd na', html: '<b>—</b><span>未设考试日期</span>', style: 'cursor:pointer' }))
+        .addEventListener('click', function () { go({ tab: 'settings' }); });
+    }
+  }
+  function render() {
+    renderTabs();
+    renderCounts();
+    var view = document.getElementById('view');
+    view.innerHTML = '';
+    var id = DB.ui.tab;
+    var fn = views[id] || views[id.indexOf('sub:') === 0 ? 'subject' : id];
+    if (!fn) { id = 'overview'; fn = views.overview; }
+    fn(view);
+    var gs = document.getElementById('gsearch');
+    gs.value = '';
+    document.getElementById('gsuggest').classList.add('hidden');
+    if (window.refreshAiChip) window.refreshAiChip();
+  }
+
+  /* ---------- 全局搜索 ---------- */
+  function searchAll(qy) {
+    var q = qy.trim().toLowerCase();
+    if (q.length < 1) return [];
+    var out = [];
+    DB.questions.forEach(function (x) {
+      if (x.stem.toLowerCase().indexOf(q) > -1 || (x.analysis || '').toLowerCase().indexOf(q) > -1)
+        out.push({ tab: 'sub:' + x.subjectId, sub: 'practice', name: subjectById(x.subjectId).short + ' 题目', text: x.stem.slice(0, 46), ref: x });
+    });
+    DB.wrongs.forEach(function (x) {
+      if (x.stem.toLowerCase().indexOf(q) > -1 || (x.note || '').toLowerCase().indexOf(q) > -1)
+        out.push({ tab: 'sub:' + x.subjectId, sub: 'wrong', name: subjectById(x.subjectId).short + ' 错题', text: x.stem.slice(0, 46), ref: x });
+    });
+    DB.kps.forEach(function (x) {
+      if (x.name.toLowerCase().indexOf(q) > -1) out.push({ tab: 'sub:' + x.subjectId, sub: 'kp', name: subjectById(x.subjectId).short + ' 知识点', text: x.name, ref: x });
+    });
+    DB.tasks.forEach(function (x) {
+      if (x.title.toLowerCase().indexOf(q) > -1) out.push({ tab: 'plan', sub: null, name: '任务', text: x.title, ref: x });
+    });
+    DB.refs.forEach(function (x) {
+      if (x.title.toLowerCase().indexOf(q) > -1 || (x.note || '').toLowerCase().indexOf(q) > -1)
+        out.push({ tab: 'library', sub: null, name: '文献', text: x.title, ref: x });
+    });
+    return out.slice(0, 24);
+  }
+  function bindSearch() {
+    var inp = document.getElementById('gsearch'), box = document.getElementById('gsuggest');
+    function show() {
+      var rs = searchAll(inp.value);
+      box.innerHTML = '';
+      if (!inp.value.trim() || !rs.length) {
+        if (inp.value.trim()) box.appendChild(el('div', { class: 'empty', style: 'padding:14px;border:0', text: '没有匹配项' }));
+        else box.classList.add('hidden');
+        if (inp.value.trim()) box.classList.remove('hidden');
+        return;
+      }
+      rs.forEach(function (r) {
+        box.appendChild(el('button', {
+          html: '<span class="tag">' + esc(r.name) + '</span><br>' + esc(r.text),
+          onclick: function () {
+            DB.ui.tab = r.tab; if (r.sub) DB.ui.sub = r.sub;
+            if (r.ref && r.ref.id) DB.ui.focus = r.ref.id;
+            save(); box.classList.add('hidden'); render();
+          }
+        }));
+      });
+      box.classList.remove('hidden');
+    }
+    inp.addEventListener('input', show);
+    inp.addEventListener('focus', show);
+    document.addEventListener('click', function (e) {
+      if (!box.contains(e.target) && e.target !== inp) box.classList.add('hidden');
+    });
+  }
+
+  /* ---------- 暴露 ---------- */
+  window.WB = {
+    KEY: KEY, MIRROR: MIRROR, SALVAGE: SALVAGE,
+    load: load, save: save, get DB() { return DB; }, set DB(v) { DB = v; },
+    storeStatus: storeStatus, hardReset: hardReset, exportSalvage: exportSalvage,
+    uid: uid, today: today, esc: esc, el: el, daysLeft: daysLeft,
+    subjectById: subjectById, sectionName: sectionName, kpById: kpById, qById: qById, wById: wById,
+    toast: toast, modal: modal, confirmBox: confirmBox,
+    donut: donut, hbars: hbars, vbars: vbars, stackBar: stackBar,
+    subjectStats: subjectStats, streakDays: streakDays, last7: last7, causeCounts: causeCounts,
+    parseFile: parseFile, matchSection: matchSection,
+    exportBackup: exportBackup, readImported: readImported,
+    registerView: registerView, go: go, render: render, bindSearch: bindSearch,
+    TABS: TABS
+  };
+})();
+
+</script>
+<script>
+/* SECTION: subject —— 总览页 + 科目四个子页（知识点/错题本/练习/导入） */
+(function () {
+  'use strict';
+  var W = window.WB, el = W.el, esc = W.esc, DB = function () { return W.DB; };
+
+  /* ============ 总览 ============ */
+  function overview(view) {
+    var d = DB();
+    var all = d.subjects.map(function (s) { return { s: s, st: W.subjectStats(s.id), dl: W.daysLeft(s.examDate) }; });
+    var totalMin = all.reduce(function (a, x) { return a + x.st.minutes; }, 0);
+    var todayMin = all.reduce(function (a, x) { return a + x.st.todayMinutes; }, 0);
+    var ansAll = all.reduce(function (a, x) { return a + x.st.answered; }, 0);
+    var rightAll = d.logs.reduce(function (a, l) { return a + (l.right || 0); }, 0);
+    var wrongAll = d.wrongs.length;
+    var dueAll = all.reduce(function (a, x) { return a + x.st.dueCount; }, 0);
+    var tasksOpen = d.tasks.filter(function (t) { return !t.done; }).length;
+    var next = all.filter(function (x) { return x.dl !== null && x.dl >= 0; }).sort(function (a, b) { return a.dl - b.dl; })[0];
+
+    view.appendChild(el('div', { class: 'grid g4', style: 'margin-bottom:14px' }, [
+      el('div', { class: 'card kpi' }, [
+        el('b', { class: 'num', text: String(todayMin) }),
+        el('span', { class: 'lb', text: '今日学习分钟（目标 ' + d.settings.goalDaily + '）' }),
+        el('span', { class: 'fo ' + (todayMin >= d.settings.goalDaily ? 'up' : ''), text: todayMin >= d.settings.goalDaily ? '已达成今日目标' : '还差 ' + (d.settings.goalDaily - todayMin) + ' 分钟' })
+      ]),
+      el('div', { class: 'card kpi' }, [
+        el('b', { class: 'num', text: String(W.streakDays()) }),
+        el('span', { class: 'lb', text: '连续打卡天数' }),
+        el('span', { class: 'fo', text: '累计学习 ' + Math.round(totalMin / 60 * 10) / 10 + ' 小时' })
+      ]),
+      el('div', { class: 'card kpi' }, [
+        el('b', { class: 'num', text: ansAll ? Math.round(rightAll / ansAll * 100) + '%' : '—' }),
+        el('span', { class: 'lb', text: '客观题总正确率（答 ' + ansAll + ' 题）' }),
+        el('span', { class: 'fo', text: '错题本 ' + wrongAll + ' 条 · 需巩固 ' + dueAll + ' 个知识点' })
+      ]),
+      el('div', { class: 'card kpi' }, [
+        el('b', { class: 'num', text: next ? String(next.dl) : '—' }),
+        el('span', { class: 'lb', text: next ? '最近倒计时：' + next.s.short : '尚未设置考试日期' }),
+        el('span', { class: 'fo', text: next ? next.s.name + ' · ' + next.s.examDate : '去设置里填各科日期' })
+      ])
+    ]));
+
+    /* 七分钟柱 + 五科进度 */
+    var left = el('div', { class: 'card' }, [
+      el('h3', { text: '近 7 天学习时长' }),
+      el('p', { class: 'sub', text: '单位：分钟 · 来自打卡记录' }),
+      W.vbars(W.last7(), '')
+    ]);
+    var right = el('div', { class: 'card' }, [
+      el('h3', { text: '五科掌握度对比' }),
+      el('p', { class: 'sub', text: '已掌握知识点 / 知识点总数 · 点击行进入该科' }),
+      el('div', {}, all.map(function (x) {
+        return el('div', { class: 'meter-row', style: 'cursor:pointer', onclick: function () { W.go({ tab: 'sub:' + x.s.id, sub: 'kp' }); } }, [
+          el('span', { text: x.s.short }),
+          el('div', { class: 'progress' }, [el('i', { style: 'width:' + x.st.masteryRate.toFixed(0) + '%;background:' + x.s.color })]),
+          el('span', { class: 'v num', text: Math.round(x.st.masteryRate) + '%' })
+        ]);
+      }))
+    ]);
+    view.appendChild(el('div', { class: 'grid g-2-1', style: 'margin-bottom:14px' }, [left, right]));
+
+    /* 各科卡片 */
+    view.appendChild(el('div', { class: 'grid g3', style: 'margin-bottom:14px' }, all.map(function (x) {
+      var s = x.s, st = x.st;
+      return el('div', { class: 'card', style: 'border-top:3px solid ' + s.color }, [
+        el('div', { style: 'display:flex;align-items:center;gap:8px;margin-bottom:8px' }, [
+          el('h3', { text: s.name, style: 'flex:1' }),
+          el('span', { class: 'chip ' + (x.dl === null ? '' : x.dl <= 30 ? 'warn' : 'accent'), text: x.dl === null ? '未设日期' : '剩 ' + x.dl + ' 天' })
+        ]),
+        el('div', { class: 'rowchips', style: 'margin-bottom:10px' }, [
+          el('span', { class: 'chip', text: '掌握 ' + st.mastered + '/' + st.kpTotal }),
+          el('span', { class: 'chip ' + (st.wrongCount ? 'bad' : ''), text: '错题 ' + st.wrongCount }),
+          el('span', { class: 'chip', text: '题库 ' + st.qCount }),
+          el('span', { class: 'chip ' + (st.accuracy === null ? '' : st.accuracy >= 80 ? 'ok' : 'warn'), text: st.accuracy === null ? '无作答' : '正确率 ' + st.accuracy + '%' })
+        ]),
+        W.stackBar([
+          { label: '已掌握', value: st.mastered, color: '#12805c' },
+          { label: '在学', value: d.kps.filter(function (k) { return k.subjectId === s.id && k.status === 1; }).length, color: '#c97a12' },
+          { label: '需巩固', value: st.dueCount, color: '#bf2727' },
+          { label: '未学', value: d.kps.filter(function (k) { return k.subjectId === s.id && k.status === 0; }).length, color: '#c3cbd8' }
+        ]),
+        el('div', { class: 'ft', style: 'margin-top:12px' }, [
+          el('button', { class: 'btn small primary', text: '去练题', onclick: function () { W.go({ tab: 'sub:' + s.id, sub: 'practice' }); } }),
+          el('button', { class: 'btn small', text: '错题本', onclick: function () { W.go({ tab: 'sub:' + s.id, sub: 'wrong' }); } }),
+          el('button', { class: 'btn small ghost', text: '记录打卡', onclick: function () { logForm(s.id); } })
+        ])
+      ]);
+    })));
+
+    /* 错因分布 + 文献/备份摘要 */
+    view.appendChild(el('div', { class: 'grid g2' }, [
+      el('div', { class: 'card' }, [
+        el('h3', { text: '全局错因分布' }),
+        el('p', { class: 'sub', text: '哪一类失误最容易踩，优先补哪一块' }),
+        W.causeCounts(null).length ? W.hbars(W.causeCounts(null)) : el('div', { class: 'empty', text: '还没有错题记录，练完题会自动进入错题本' })
+      ]),
+      el('div', { class: 'card' }, [
+        el('h3', { text: '今日待办与提醒' }),
+        el('p', { class: 'sub', text: '来自复习计划 · 资料库 · 备份台账' }),
+        el('div', { class: 'list' }, [
+          el('div', { class: 'item', style: 'padding:10px 12px' }, [el('div', { class: 'hd' }, [
+            el('span', { class: 'ttl', text: '未完成任务 ' + tasksOpen + ' 项' }),
+            el('button', { class: 'btn small', text: '去计划', onclick: function () { W.go({ tab: 'plan' }); } })])]),
+          el('div', { class: 'item', style: 'padding:10px 12px' }, [el('div', { class: 'hd' }, [
+            el('span', { class: 'ttl', text: '文献台账 ' + d.refs.length + ' 篇 · 备份记录 ' + d.backups.length + ' 次' }),
+            el('button', { class: 'btn small', text: '去资料库', onclick: function () { W.go({ tab: 'library' }); } })])]),
+          el('div', { class: 'item', style: 'padding:10px 12px' }, [el('div', { class: 'hd' }, [
+            el('span', { class: 'ttl', text: dueAll ? '有 ' + dueAll + ' 个知识点标记为需巩固' : '暂无需巩固的知识点' }),
+            el('button', { class: 'btn small', text: '去复习', onclick: function () { W.go({ tab: 'plan' }); } })])])
+        ])
+      ])
+    ]));
+  }
+
+  /* ============ 打卡记录 ============ */
+  function logForm(sid) {
+    var d = DB();
+    var subSel = el('select', {}, d.subjects.map(function (s) { return el('option', { value: s.id, text: s.name, selected: s.id === sid ? 'selected' : null }); }));
+    var min = el('input', { type: 'number', value: '45', min: '1', max: '1440' });
+    var ans = el('input', { type: 'number', value: '10', min: '0' });
+    var right = el('input', { type: 'number', value: '8', min: '0' });
+    var date = el('input', { type: 'date', value: W.today() });
+    var note = el('input', { type: 'text', placeholder: '今天主要推进了什么（可留空）' });
+    var m = W.modal({
+      title: '记录今日学习',
+      body: [el('div', { class: 'form-grid' }, [
+        el('div', { class: 'field' }, [el('label', { text: '科目' }), subSel]),
+        el('div', { class: 'field' }, [el('label', { text: '日期' }), date]),
+        el('div', { class: 'field' }, [el('label', { text: '学习时长（分钟）' }), min]),
+        el('div', { class: 'field' }, [el('label', { text: '完成题量' }), ans]),
+        el('div', { class: 'field' }, [el('label', { text: '其中答对' }), right])
+      ]), el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '备注' }), note])],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', 'data-primary-action': 'log', text: '保存打卡', onclick: function () {
+            var mm = Math.max(0, parseInt(min.value, 10) || 0);
+            var aa = Math.max(0, parseInt(ans.value, 10) || 0);
+            var rr = Math.min(aa, Math.max(0, parseInt(right.value, 10) || 0));
+            if (!mm && !aa) { W.toast('时长和题量至少填一个', 'bad'); return; }
+            d.logs.push({ id: W.uid('lg'), subjectId: subSel.value, date: date.value || W.today(), minutes: mm, answered: aa, right: rr, note: note.value.trim() });
+            W.save(); m.close(); W.render();
+            W.toast('已记录 ' + mm + ' 分钟 · 连续打卡 ' + W.streakDays() + ' 天', 'ok');
+          }
+        })
+      ]
+    });
+  }
+
+  /* ============ 知识点 ============ */
+  function kpBoard(view, sid) {
+    var d = DB(), sub = W.subjectById(sid), st = W.subjectStats(sid);
+    var bySec = {};
+    d.kps.filter(function (k) { return k.subjectId === sid; }).forEach(function (k) {
+      (bySec[k.sectionId] = bySec[k.sectionId] || []).push(k);
+    });
+
+    var head = el('div', { class: 'card', style: 'margin-bottom:14px;display:flex;gap:18px;align-items:center;flex-wrap:wrap' }, [
+      W.donut(st.masteryRate, '掌握率', sub.color),
+      el('div', { style: 'flex:1;min-width:210px' }, [
+        el('h3', { text: sub.name + ' · 知识点体系' }),
+        el('p', { class: 'sub', text: '点击状态徽章在 未学 → 在学 → 已掌握 → 需巩固 之间循环；可直接增删知识点' }),
+        el('div', { class: 'rowchips' }, [
+          el('span', { class: 'chip', text: '共 ' + st.kpTotal + ' 个' }),
+          el('span', { class: 'chip ok', text: '已掌握 ' + st.mastered }),
+          el('span', { class: 'chip warn', text: '在学 ' + d.kps.filter(function (k) { return k.subjectId === sid && k.status === 1; }).length }),
+          el('span', { class: 'chip bad', text: '需巩固 ' + st.dueCount }),
+          el('span', { class: 'chip', text: '未学 ' + d.kps.filter(function (k) { return k.subjectId === sid && k.status === 0; }).length })
+        ]),
+        el('div', { class: 'btnrow', style: 'margin-top:10px' }, [
+          el('button', { class: 'btn small primary', text: '新增知识点', onclick: function () { kpForm(sid, null); } }),
+          el('button', { class: 'btn small', text: '新增章节', onclick: function () { sectionForm(sid); } })
+        ])
+      ])
+    ]);
+    view.appendChild(head);
+
+    sub.sections.forEach(function (sec) {
+      var list = bySec[sec.id] || [];
+      var box = el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+        el('div', { style: 'display:flex;align-items:center;gap:8px;margin-bottom:10px' }, [
+          el('h3', { text: sec.name, style: 'flex:1' }),
+          el('span', { class: 'chip', text: list.length + ' 个知识点' }),
+          el('button', { class: 'btn small ghost', text: '＋', title: '在本节新增知识点', onclick: function () { kpForm(sid, sec.id); } })
+        ]),
+        list.length ? el('div', { class: 'kp-grid' }, list.map(function (k) {
+          var ch = el('span', { class: 'chip st' + k.status + ' clickable', text: window.SEED.kpStatuses[k.status], title: '点击切换状态' });
+          ch.addEventListener('click', function (e) {
+            e.stopPropagation();
+            k.status = (k.status + 1) % 4;
+            W.save();
+            ch.textContent = window.SEED.kpStatuses[k.status];
+            ch.className = 'chip st' + k.status + ' clickable';
+            W.render();
+          });
+          var card = el('div', { class: 'kp-card', onclick: function () { kpForm(sid, sec.id, k); } }, [
+            el('div', { style: 'display:flex;gap:6px;align-items:flex-start' }, [el('span', { class: 'nm', text: k.name }), ch]),
+            el('div', { style: 'display:flex;gap:6px;align-items:center' }, [
+              el('span', { class: 'sc', text: '关联错题 ' + d.wrongs.filter(function (w) { return w.kpId === k.id; }).length + ' 条' }),
+              el('span', { class: 'sec', text: sec.name, style: 'margin-left:auto' })
+            ])
+          ]);
+          return card;
+        })) : el('div', { class: 'empty', html: '<b>这一节还没有知识点</b>点右上角 ＋ 添加' })
+      ]);
+      view.appendChild(box);
+    });
+  }
+  function kpForm(sid, secId, k) {
+    var d = DB(), sub = W.subjectById(sid);
+    var name = el('input', { type: 'text', value: k ? k.name : '', placeholder: '例如：中值定理的三种构造辅助函数' });
+    var sec = el('select', {}, sub.sections.map(function (s) { return el('option', { value: s.id, text: s.name, selected: (k ? k.sectionId : secId) === s.id ? 'selected' : null }); }));
+    var stt = el('select', {}, window.SEED.kpStatuses.map(function (n, i) { return el('option', { value: String(i), text: n, selected: String(i) === String(k ? k.status : 0) ? 'selected' : null }); }));
+    var m = W.modal({
+      title: (k ? '编辑知识点' : '新增知识点'),
+      body: [
+        el('div', { class: 'field' }, [el('label', { text: '名称' }), name]),
+        el('div', { class: 'form-grid', style: 'margin-top:10px' }, [
+          el('div', { class: 'field' }, [el('label', { text: '所属章节' }), sec]),
+          el('div', { class: 'field' }, [el('label', { text: '掌握状态' }), stt])
+        ])
+      ],
+      footer: [
+        k ? el('button', {
+          class: 'btn danger', text: '删除', onclick: function () {
+            W.confirmBox('删除知识点', '删除后该知识点下的错题仍保留，但会失去关联。确定删除？', function () {
+              d.kps = d.kps.filter(function (x) { return x.id !== k.id; });
+              W.save(); m.close(); W.render(); W.toast('已删除知识点', 'ok');
+            }, '删除');
+          }
+        }) : null,
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', text: '保存', onclick: function () {
+            if (!name.value.trim()) { W.toast('请填写名称', 'bad'); return; }
+            if (k) { k.name = name.value.trim(); k.sectionId = sec.value; k.status = parseInt(stt.value, 10); }
+            else d.kps.push({ id: W.uid('kp'), subjectId: sid, sectionId: sec.value, name: name.value.trim(), status: parseInt(stt.value, 10) });
+            W.save(); m.close(); W.render(); W.toast(k ? '已更新' : '已新增知识点', 'ok');
+          }
+        })
+      ].filter(Boolean)
+    });
+  }
+  function sectionForm(sid) {
+    var d = DB(), sub = W.subjectById(sid);
+    var nm = el('input', { type: 'text', placeholder: '例如：微分方程' });
+    var m = W.modal({
+      title: '新增章节（' + sub.name + '）',
+      body: [el('div', { class: 'field' }, [el('label', { text: '章节名' }), nm]),
+      el('p', { class: 'hint', style: 'margin-top:8px;color:var(--ink3)', text: '章节用于组织知识点与题库，删除章节不会删除其中的数据。'})],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', text: '添加', onclick: function () {
+            if (!nm.value.trim()) { W.toast('请填写章节名', 'bad'); return; }
+            sub.sections.push({ id: W.uid('sc'), name: nm.value.trim() });
+            W.save(); m.close(); W.render(); W.toast('已新增章节', 'ok');
+          }
+        })
+      ]
+    });
+  }
+
+  /* ============ 错题本 ============ */
+  var wFilter = { cause: '', sec: '', kw: '' };
+  function wrongBoard(view, sid) {
+    var d = DB(), sub = W.subjectById(sid), cs = W.causeCounts(sid);
+    var list = d.wrongs.filter(function (w) { return w.subjectId === sid; });
+    if (wFilter.cause) list = list.filter(function (w) { return (w.causes || []).indexOf(wFilter.cause) > -1; });
+    if (wFilter.sec) list = list.filter(function (w) { return w.sectionId === wFilter.sec; });
+    if (wFilter.kw) { var q = wFilter.kw.toLowerCase(); list = list.filter(function (w) { return (w.stem + ' ' + (w.note || '')).toLowerCase().indexOf(q) > -1; }); }
+
+    var bar = el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('div', { style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px' }, [
+        el('h3', { text: '错题本', style: 'flex:1;min-width:130px' }),
+        el('span', { class: 'chip accent', text: '共 ' + d.wrongs.filter(function (w) { return w.subjectId === sid; }).length + ' 条' + (list.length !== d.wrongs.filter(function (w) { return w.subjectId === sid; }).length ? ' · 筛出 ' + list.length : '') }),
+        el('button', { class: 'btn small primary', 'data-primary-action': 'wrong-add', text: '手动记错题', onclick: function () { wrongForm(sid); } })
+      ]),
+      el('div', { style: 'display:flex;gap:12px;flex-wrap:wrap' }, [
+        el('div', { style: 'flex:1 1 240px' }, [
+          el('p', { class: 'sub', text: '错因占比（点击筛选）', style: 'margin-bottom:8px' }),
+          cs.length ? el('div', { class: 'rowchips' }, cs.map(function (c) {
+            return el('span', { class: 'chip clickable ' + (wFilter.cause === c.label ? 'accent' : ''), text: c.label + ' ' + c.value, onclick: function () { wFilter.cause = wFilter.cause === c.label ? '' : c.label; W.render(); } });
+          })) : el('p', { class: 'sub', text: '暂无数据' })
+        ]),
+        el('div', { style: 'flex:1 1 240px' }, [
+          el('div', { class: 'form-grid' }, [
+            el('div', { class: 'field' }, [el('label', { text: '按章节' }), el('select', { onchange: function (e) { wFilter.sec = e.target.value; W.render(); } },
+              [el('option', { value: '', text: '全部章节' })].concat(sub.sections.map(function (s) { return el('option', { value: s.id, text: s.name, selected: s.id === wFilter.sec ? 'selected' : null }); })))]),
+            el('div', { class: 'field' }, [el('label', { text: '关键词' }), el('input', { type: 'search', value: wFilter.kw, placeholder: '搜索题干/备注', oninput: function (e) { wFilter.kw = e.target.value; clearTimeout(window.__wt); window.__wt = setTimeout(function () { W.render(); }, 260); } })])
+          ])
+        ])
+      ])
+    ]);
+    view.appendChild(bar);
+
+    if (!list.length) {
+      view.appendChild(el('div', { class: 'empty', html: '<b>' + (d.wrongs.filter(function (w) { return w.subjectId === sid; }).length ? '当前筛选没有错题' : '还没有错题记录') + '</b>练习判错后会自动进入这里，也可以手动录入' }));
+      return;
+    }
+    view.appendChild(el('div', { class: 'list' }, list.slice().sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); }).map(function (w) {
+      var chips = (w.causes || []).map(function (c) { return el('span', { class: 'chip bad', text: c }); });
+      if (w.kpId && W.kpById(w.kpId)) chips.push(el('span', { class: 'chip', text: W.kpById(w.kpId).name }));
+      if (w.qtype) chips.push(el('span', { class: 'chip', text: w.qtype === 'single' ? '客观题' : '主观题' }));
+      if (w.reviewed) chips.push(el('span', { class: 'chip ok', text: '已重做通过' }));
+      if (!w.reviewed && w.auto !== false) chips.push(el('span', { class: 'chip warn', text: '待重做' }));
+      var body = el('div', {}, [
+        el('div', { class: 'hd' }, [el('span', { class: 'ttl', text: w.stem.slice(0, 80) + (w.stem.length > 80 ? '…' : '') }),
+          el('span', { class: 'meta', text: W.sectionName(sub, w.sectionId) + ' · ' + (w.date || '') })]),
+        el('div', { class: 'bd', text: (w.answer ? '答案：' + w.answer + (w.yourAnswer ? ' ｜ 你的作答：' + w.yourAnswer : '') : '') }),
+        w.analysis ? el('div', { class: 'bd', style: 'margin-top:6px;color:var(--ink2)', text: '解析：' + w.analysis }) : null,
+        w.note ? el('div', { class: 'bd', style: 'margin-top:6px', text: '我的反思：' + w.note }) : null,
+        w.aiTip ? el('div', { class: 'bd', style: 'margin-top:6px;background:var(--accent-soft);padding:8px;border-radius:8px', text: 'AI 解析：' + w.aiTip }) : null,
+        el('div', { class: 'ft' }, chips.concat([
+          el('button', { class: 'linkbtn', text: w.reviewed ? '取消重做标记' : '标记已重做', onclick: function () { w.reviewed = !w.reviewed; W.save(); W.render(); } }),
+          el('button', { class: 'linkbtn', text: '编辑', onclick: function () { wrongForm(sid, w); } }),
+          el('button', { class: 'linkbtn', text: '问 AI', onclick: function () { window.attachAiQuestion(w.stem, (w.causes || []).join('、'), w.id); } }),
+          el('button', { class: 'linkbtn', text: '删除', onclick: function () {
+            W.confirmBox('删除错题', '这条错题记录会被移除，统计随之更新。确定？', function () {
+              d.wrongs = d.wrongs.filter(function (x) { return x.id !== w.id; }); W.save(); W.render(); W.toast('已删除', 'ok');
+            }, '删除');
+          } })
+        ]))
+      ].filter(Boolean));
+      return el('div', { class: 'item' }, [body]);
+    })));
+  }
+  function wrongForm(sid, w) {
+    var d = DB(), sub = W.subjectById(sid);
+    var stem = el('textarea', { placeholder: '题干（可粘贴整题）' });
+    if (w) stem.value = w.stem;
+    var ans = el('input', { type: 'text', value: w ? w.answer || '' : '', placeholder: '正确答案（可留空）' });
+    var your = el('input', { type: 'text', value: w ? w.yourAnswer || '' : '', placeholder: '你当时的作答' });
+    var ana = el('textarea', { placeholder: '解析（可选）', style: 'min-height:56px' });
+    if (w) ana.value = w.analysis || '';
+    var note = el('textarea', { placeholder: '错因反思：我为什么错、下次怎么防', style: 'min-height:56px' });
+    if (w) note.value = w.note || '';
+    var sec = el('select', {}, sub.sections.map(function (s) { return el('option', { value: s.id, text: s.name, selected: w && w.sectionId === s.id ? 'selected' : null }); }));
+    var kps = el('select', {}, [el('option', { value: '', text: '（不关联）' })].concat(
+      d.kps.filter(function (k) { return k.subjectId === sid; }).map(function (k) { return el('option', { value: k.id, text: k.name, selected: w && w.kpId === k.id ? 'selected' : null }); })));
+    var causeBox = el('div', { class: 'rowchips' }, window.SEED.errorCauses.map(function (c) {
+      var on = w && (w.causes || []).indexOf(c) > -1;
+      var ch = el('span', { class: 'chip clickable ' + (on ? 'bad' : ''), text: c });
+      ch.addEventListener('click', function () { ch.className = ch.className.indexOf('bad') > -1 ? 'chip clickable' : 'chip clickable bad'; });
+      return ch;
+    }));
+    var m = W.modal({
+      title: w ? '编辑错题' : '新增错题（' + sub.name + '）',
+      body: [
+        el('div', { class: 'field' }, [el('label', { text: '题干 *' }), stem]),
+        el('div', { class: 'form-grid', style: 'margin-top:10px' }, [
+          el('div', { class: 'field' }, [el('label', { text: '正确答案' }), ans]),
+          el('div', { class: 'field' }, [el('label', { text: '我的作答' }), your])
+        ]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '解析' }), ana]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '错因（可多选）' }), causeBox]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '反思笔记' }), note]),
+        el('div', { class: 'form-grid', style: 'margin-top:10px' }, [
+          el('div', { class: 'field' }, [el('label', { text: '章节' }), sec]),
+          el('div', { class: 'field' }, [el('label', { text: '关联知识点' }), kps])
+        ])
+      ],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', text: '保存', onclick: function () {
+            if (!stem.value.trim()) { W.toast('题干不能为空', 'bad'); return; }
+            var causes = [];
+            causeBox.querySelectorAll('.chip.bad').forEach(function (x) { causes.push(x.textContent); });
+            var patch = {
+              subjectId: sid, sectionId: sec.value, kpId: kps.value || null,
+              stem: stem.value.trim(), answer: ans.value.trim(), yourAnswer: your.value.trim(),
+              analysis: ana.value.trim(), note: note.value.trim(), causes: causes
+            };
+            if (w) { Object.assign(w, patch); }
+            else d.wrongs.push(Object.assign({ id: W.uid('w'), date: W.today(), ts: Date.now(), reviewed: false, qtype: 'subjective' }, patch));
+            W.save(); m.close(); W.render(); W.toast(w ? '错题已更新' : '已加入错题本', 'ok');
+          }
+        })
+      ]
+    });
+  }
+
+  /* ============ 练习 ============ */
+  var pState = { idx: 0, picked: {}, done: {}, onlyWrong: false, sec: '', mode: 'all' };
+  function practiceBoard(view, sid) {
+    var d = DB(), sub = W.subjectById(sid);
+    var pool = d.questions.filter(function (q) { return q.subjectId === sid; });
+    if (pState.sec) pool = pool.filter(function (q) { return q.sectionId === pState.sec; });
+    if (pState.mode === 'wrong') {
+      var ids = {}; d.wrongs.forEach(function (w) { if (w.qid && !w.reviewed) ids[w.qid] = 1; });
+      pool = pool.filter(function (q) { return ids[q.id]; });
+    }
+    if (pState.idx >= pool.length) pState.idx = 0;
+
+    var bar = el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('div', { style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap' }, [
+        el('h3', { text: '模拟练习', style: 'flex:1;min-width:120px' }),
+        el('span', { class: 'chip accent', text: '题库 ' + d.questions.filter(function (q) { return q.subjectId === sid; }).length + ' 题' }),
+        el('span', { class: 'chip ' + (pool.length ? '' : 'warn'), text: (pState.mode === 'wrong' ? '待重做错题 ' : '本轮可练 ') + pool.length + ' 题' }),
+        el('button', { class: 'btn small', text: pState.mode === 'wrong' ? '练全部题' : '只练待重做错题', onclick: function () { pState.mode = pState.mode === 'wrong' ? 'all' : 'wrong'; pState.idx = 0; W.render(); } }),
+        el('button', { class: 'btn small', 'data-primary-action': 'import', text: '导入真题', onclick: function () { importDialog(sid); } }),
+        el('button', { class: 'btn small ghost', text: '手动加题', onclick: function () { qForm(sid); } })
+      ]),
+      el('div', { class: 'form-grid', style: 'margin-top:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))' }, [
+        el('div', { class: 'field' }, [el('label', { text: '按章节筛选' }), el('select', { onchange: function (e) { pState.sec = e.target.value; pState.idx = 0; W.render(); } },
+          [el('option', { value: '', text: '全部章节' })].concat(sub.sections.map(function (s) { return el('option', { value: s.id, text: s.name, selected: s.id === pState.sec ? 'selected' : null }); })))]),
+        el('div', { class: 'field' }, [el('label', { text: '跳题号' }), el('input', { type: 'number', min: '1', max: String(Math.max(1, pool.length)), value: String(pState.idx + 1), onchange: function (e) { pState.idx = Math.max(0, Math.min(pool.length - 1, (parseInt(e.target.value, 10) || 1) - 1)); W.render(); } })])
+      ])
+    ]);
+    view.appendChild(bar);
+
+    if (!pool.length) {
+      view.appendChild(el('div', { class: 'empty', html: '<b>这个筛选下没有题目</b>' + (pState.mode === 'wrong' ? '待重做错题清零了，先练新题吧' : '点「导入真题」批量导入，或手动加一道') }));
+      return;
+    }
+    var q = pool[pState.idx];
+    window.currentPracticeQuestion = function () { return q; };
+    var rec = pState.done[q.id];
+    var card = el('div', { class: 'qcard', style: 'margin-bottom:14px' }, [
+      el('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px' }, [
+        el('span', { class: 'chip accent', text: (pState.idx + 1) + ' / ' + pool.length }),
+        el('span', { class: 'chip', text: q.type === 'single' ? '单选（自动判分）' : '主观题（自评）' }),
+        el('span', { class: 'chip', text: W.sectionName(sub, q.sectionId) }),
+        q.origin ? el('span', { class: 'chip ' + (q.origin === '示例' ? 'seed' : ''), text: q.origin === '示例' ? '示例题' : q.origin }) : null,
+        el('span', { style: 'flex:1' }),
+        el('button', { class: 'linkbtn', text: '上一题', onclick: function () { pState.idx = Math.max(0, pState.idx - 1); W.render(); } }),
+        el('button', { class: 'linkbtn', text: '下一题', onclick: function () { pState.idx = Math.min(pool.length - 1, pState.idx + 1); W.render(); } }),
+        el('button', { class: 'linkbtn', text: '随机跳', onclick: function () { pState.idx = Math.floor(Math.random() * pool.length); W.render(); } })
+      ]),
+      el('div', { class: 'stem', text: q.stem })
+    ]);
+
+    if (q.type === 'single' && q.options.length >= 2) {
+      var picked = pState.picked[q.id];
+      q.options.forEach(function (o) {
+        var cls = 'opt';
+        if (rec) {
+          if (o.k === q.answer) cls += ' right';
+          else if (o.k === picked) cls += ' wrong';
+          else cls += ' dim';
+        } else if (picked === o.k) cls += ' sel';
+        var node = el('div', {
+          class: cls, role: 'button', tabindex: '0',
+          html: '<span class="k">' + esc(o.k) + '.</span><span>' + esc(o.v) + '</span>'
+        });
+        function choose() {
+          if (rec) return;
+          pState.picked[q.id] = o.k;
+          judge(q, o.k, sid);
+        }
+        node.addEventListener('click', choose);
+        node.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } });
+        card.appendChild(node);
+      });
+    } else {
+      card.appendChild(el('div', { class: 'field' }, [
+        el('label', { text: rec ? '我的作答（已记录）' : '作答区：先自己写一遍，再对照答案自评' }),
+        el('textarea', {
+          id: 'ansbox', placeholder: '在此写下你的答案 / 解题过程 / 译文 / 证明步骤…',
+          value: rec ? (pState.myAns && pState.myAns[q.id]) || '' : ''
+        })
+      ]));
+      if (!rec) {
+        var showBtn = el('button', { class: 'btn', text: '看参考答案', onclick: function () {
+          var box = card.querySelector('#refbox');
+          box.classList.remove('hidden');
+        } });
+        var selfRight = el('button', { class: 'btn primary', text: '自评：我答对了', onclick: function () { judge(q, (card.querySelector('#ansbox') || {}).value || '', sid, true); } });
+        var selfWrong = el('button', { class: 'btn danger', text: '自评：我答错了', onclick: function () {
+          var ta = card.querySelector('#ansbox');
+          judge(q, ta ? ta.value : '', sid, false);
+        } });
+        card.appendChild(el('div', { class: 'btnrow', style: 'margin-top:10px' }, [showBtn, selfRight, selfWrong]));
+        card.appendChild(el('div', { class: 'verdict info hidden', id: 'refbox', html: '<b>参考答案</b>' + esc(q.answer || '（无参考答案）') + (q.analysis ? '\n\n' + esc(q.analysis) : '') }));
+      }
+    }
+
+    if (rec) {
+      var v = el('div', { class: 'verdict ' + (rec.ok ? 'ok' : 'bad'), html: '<b>' + (rec.ok ? '判对' : '判错') + ' · ' + esc(rec.label) + '</b>' +
+        esc('正确答案：' + (q.answer || '—')) + (q.analysis ? '\n解析：' + esc(q.analysis) : '') +
+        (rec.myAns ? '\n我的作答：' + esc(String(rec.myAns).slice(0, 300)) : '') +
+        (rec.aiTip ? '\nAI 解析：' + esc(rec.aiTip) : '') });
+      v.style.whiteSpace = 'pre-wrap';
+      card.appendChild(v);
+      card.appendChild(el('div', { class: 'btnrow', style: 'margin-top:10px' }, [
+        rec.qid ? el('button', { class: 'btn small', text: '在错题本查看', onclick: function () { pState.sec = ''; W.go({ tab: 'sub:' + sid, sub: 'wrong' }); } }) : null,
+        el('button', { class: 'btn small', text: '问 AI 这题', onclick: function () { window.attachAiQuestion(q.stem, q.type === 'single' ? '选项 ' + (q.options.map(function (o) { return o.k; }).join('/')) : '主观题'); } }),
+        el('button', { class: 'btn small ghost', text: '重做本题', onclick: function () { delete pState.done[q.id]; W.render(); } }),
+        el('button', { class: 'btn small primary', text: '下一题', onclick: function () { pState.idx = Math.min(pool.length - 1, pState.idx + 1); W.render(); } })
+      ]));
+    }
+    view.appendChild(card);
+
+    /* 本轮统计 */
+    var doneIds = Object.keys(pState.done).filter(function (id) { var qq = W.qById(id); return qq && qq.subjectId === sid; });
+    if (doneIds.length) {
+      var ok = doneIds.filter(function (id) { return pState.done[id].ok; }).length;
+      view.appendChild(el('div', { class: 'card' }, [
+        el('h3', { text: '本次练习小结' }),
+        el('p', { class: 'sub', text: '共做 ' + doneIds.length + ' 题 · 判对 ' + ok + ' 题 · 正确率 ' + Math.round(ok / doneIds.length * 100) + '%' }),
+        el('div', { class: 'progress', style: 'margin-bottom:10px' }, [el('i', { style: 'width:' + (ok / doneIds.length * 100).toFixed(0) + '%;background:#12805c' })]),
+        el('div', { class: 'btnrow' }, [
+          el('button', {
+            class: 'btn small', text: '把这次记录写成打卡', onclick: function () {
+              d.logs.push({ id: W.uid('lg'), subjectId: sid, date: W.today(), minutes: 0, answered: doneIds.length, right: ok, note: '练习自动记录' });
+              W.save(); W.render(); W.toast('已写入打卡统计（时长可在设置补填）', 'ok');
+            }
+          }),
+          el('button', { class: 'btn small ghost', text: '清空本轮作答', onclick: function () { pState.done = {}; pState.picked = {}; pState.myAns = {}; W.render(); } })
+        ])
+      ]));
+    }
+  }
+
+  function judge(q, given, sid, subjectiveOk) {
+    var d = DB(), sub = W.subjectById(sid);
+    var ok, label;
+    if (q.type === 'single') {
+      ok = String(given).toUpperCase() === String(q.answer).toUpperCase();
+      label = ok ? '自动判分：选对' : '自动判分：选了 ' + given;
+    } else {
+      ok = subjectiveOk === true;
+      label = ok ? '自评：答对' : '自评：答错';
+    }
+    pState.done[q.id] = { ok: ok, label: label, myAns: String(given).slice(0, 400) };
+    pState.myAns = pState.myAns || {}; pState.myAns[q.id] = String(given).slice(0, 400);
+
+    /* 已存在的关联错题：判对则标记重做通过 */
+    var existed = d.wrongs.filter(function (w) { return w.qid === q.id; })[0];
+    if (ok) {
+      if (existed) existed.reviewed = true;
+    } else {
+      if (!existed) {
+        var causes = q.type === 'single' ? ['概念不清'] : ['思路缺失'];
+        var wrec = {
+          id: W.uid('w'), qid: q.id, subjectId: sid, sectionId: q.sectionId, kpId: q.kpId || null,
+          stem: q.stem, options: (q.options || []).map(function (o) { return o.k + '. ' + o.v; }).join('  '),
+          answer: q.answer || '', yourAnswer: String(given).slice(0, 200), analysis: q.analysis || '',
+          causes: causes, note: '', date: W.today(), ts: Date.now(), reviewed: false, qtype: q.type, origin: q.origin || ''
+        };
+        d.wrongs.push(wrec);
+        pState.done[q.id].qid = wrec.id;
+        if (q.kpId) { var kp = W.kpById(q.kpId); if (kp && kp.status === 2) kp.status = 3; }
+      } else {
+        existed.reviewed = false;
+        existed.yourAnswer = String(given).slice(0, 200);
+        pState.done[q.id].qid = existed.id;
+      }
+    }
+    W.save();
+    W.render();
+    if (!ok) W.toast('判错，已加入错题本：' + sub.short);
+  }
+
+  function qForm(sid) {
+    var d = DB(), sub = W.subjectById(sid);
+    var stem = el('textarea', { placeholder: '题干' });
+    var opts = el('textarea', { placeholder: '选项，每行一个：\nA. …\nB. …\nC. …\nD. …（主观题留空）', style: 'min-height:96px' });
+    var ans = el('input', { type: 'text', placeholder: '答案：客观题填字母，主观题填要点或参考译文' });
+    var ana = el('textarea', { placeholder: '解析（可选）', style: 'min-height:64px' });
+    var sec = el('select', {}, sub.sections.map(function (s) { return el('option', { value: s.id, text: s.name }); }));
+    var kps = el('select', {}, [el('option', { value: '', text: '（不关联）' })].concat(d.kps.filter(function (k) { return k.subjectId === sid; }).map(function (k) { return el('option', { value: k.id, text: k.name }); })));
+    var m = W.modal({
+      title: '新增题目（' + sub.name + '）',
+      body: [
+        el('div', { class: 'field' }, [el('label', { text: '题干 *' }), stem]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '选项' }), opts, el('span', { class: 'hint', text: '填了 2 个以上选项即视为单选题，自动判分；留空则按主观题自评。' })]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '答案 / 参考要点 *' }), ans]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '解析' }), ana]),
+        el('div', { class: 'form-grid', style: 'margin-top:10px' }, [
+          el('div', { class: 'field' }, [el('label', { text: '章节' }), sec]),
+          el('div', { class: 'field' }, [el('label', { text: '关联知识点' }), kps])
+        ])
+      ],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', text: '加入题库', onclick: function () {
+            var olist = [];
+            opts.value.split(/\r?\n/).forEach(function (ln) {
+              var mm = ln.trim().match(/^([A-H])[\s\.、．)）、:：:]\s*(.+)$/) || ln.trim().match(/^([A-H])\s{1,}(.+)$/);
+              if (mm) olist.push({ k: mm[1], v: mm[2].trim() });
+            });
+            if (!stem.value.trim() || !ans.value.trim()) { W.toast('题干和答案必填', 'bad'); return; }
+            d.questions.push({
+              id: W.uid('q'), subjectId: sid, sectionId: sec.value, kpId: kps.value || null,
+              stem: stem.value.trim(), options: olist, answer: ans.value.trim(),
+              analysis: ana.value.trim(), type: olist.length >= 2 ? 'single' : 'subjective', origin: '手动录入'
+            });
+            W.save(); m.close(); W.render(); W.toast('已加入题库', 'ok');
+          }
+        })
+      ]
+    });
+  }
+
+  /* ============ 导入真题 ============ */
+  function importDialog(sid) {
+    var d = DB(), sub = W.subjectById(sid);
+    var secSel = el('select', {}, sub.sections.map(function (s) { return el('option', { value: s.id, text: s.name }); }));
+    var kpSel = el('select', {}, [el('option', { value: '', text: '按题干自动匹配（默认）' })].concat(
+      d.kps.filter(function (k) { return k.subjectId === sid; }).map(function (k) { return el('option', { value: k.id, text: k.name }); })));
+    var origin = el('input', { type: 'text', value: '真题导入', placeholder: '来源标注，如 2024 真题' });
+    var drop = el('div', { class: 'drop', id: 'dropzone' }, [
+      el('b', { text: '把真题文件拖到这里' }),
+      el('p', { text: '支持 .txt / .md / .csv（可多选）。csv 需含「题干」列，另有「选项A~D」「答案」「解析」「章节」更好。' })
+    ]);
+    var picker = el('input', { type: 'file', multiple: 'multiple', accept: '.txt,.md,.markdown,.csv,.text', style: 'width:100%' });
+    var rep = el('div', { class: 'report hidden', id: 'rep' });
+    var paste = el('textarea', { placeholder: '也可以直接把题目粘贴到这里：\n1. 题干……\nA. 选项\nB. 选项\n答案：A\n解析：……', style: 'min-height:120px' });
+
+    var results = [];
+    function handle(files) {
+      var pend = files.length;
+      if (!pend) return;
+      Array.prototype.forEach.call(files, function (f) {
+        var fr = new FileReader();
+        fr.onload = function () {
+          try {
+            var txt = fr.result;
+            if (/\uFFFD/.test(txt)) { W.toast(f.name + ' 可能是编码非 UTF-8 的文件，建议在记事本另存为 UTF-8 后重试', 'bad'); }
+            results.push({ name: f.name, out: W.parseFile(f.name, txt) });
+          } catch (e) { results.push({ name: f.name, out: { recs: [], fails: [{ line: 0, reason: e.message }] } }); }
+          if (!--pend) paint();
+        };
+        fr.onerror = function () { results.push({ name: f.name, out: { recs: [], fails: [{ line: 0, reason: '读取失败' }] } }); if (!--pend) paint(); };
+        fr.readAsText(f, 'utf-8');
+      });
+    }
+    function paint() {
+      if (!results.length) return;
+      rep.classList.remove('hidden');
+      rep.innerHTML = '';
+      var total = 0;
+      results.forEach(function (r) {
+        var okN = r.out.recs.length, fN = r.out.fails.length;
+        total += okN;
+        rep.appendChild(el('div', { class: fN && !okN ? 'f' : 's', text: r.name + '：解析成功 ' + okN + ' 题' + (fN ? '，' + fN + ' 条未导入' : '') }));
+        r.out.fails.slice(0, 8).forEach(function (x) {
+          rep.appendChild(el('div', { class: 'f', text: '  · 第 ' + (x.line || '?') + ' 行 — ' + x.reason }));
+        });
+        if (fN > 8) rep.appendChild(el('div', { class: 'f', text: '  · 其余 ' + (fN - 8) + ' 条同类问题省略' }));
+      });
+      rep.appendChild(el('div', { style: 'margin-top:6px;color:var(--ink2)', text: '合计可导入 ' + total + ' 题到「' + sub.name + ' · ' + secSel.options[secSel.selectedIndex].text + '」。确认按钮在下方。' }));
+    }
+
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); });
+    });
+    drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files) handle(e.dataTransfer.files); });
+    drop.addEventListener('click', function () { picker.click(); });
+    picker.addEventListener('change', function () { handle(picker.files); });
+
+    function doImport(recs, label) {
+      var n = 0, map = {};
+      recs.forEach(function (r) {
+        var secId;
+        if (r.sectionLabel && !map['x' + r.sectionLabel]) {
+          secId = W.matchSection(sub, r.sectionLabel);
+          map['x' + r.sectionLabel] = secId;
+        } else secId = map['x' + r.sectionLabel] || secSel.value;
+        var kpId = kpSel.value;
+        if (!kpId) {
+          var guess = d.kps.filter(function (k) { return k.subjectId === sid && k.sectionId === secId; })[0];
+          kpId = guess ? guess.id : null;
+        }
+        d.questions.push({
+          id: W.uid('q'), subjectId: sid, sectionId: secId, kpId: kpId,
+          stem: r.stem, options: r.options || [], answer: r.answer, analysis: r.analysis || '',
+          type: r.type || 'subjective', origin: label || origin.value.trim() || '真题导入'
+        });
+        n++;
+      });
+      W.save();
+      return n;
+    }
+
+    var m = W.modal({
+      title: '导入真题 · ' + sub.name,
+      body: [
+        el('div', { class: 'form-grid', style: 'margin-bottom:12px' }, [
+          el('div', { class: 'field' }, [el('label', { text: '默认归入章节' }), secSel]),
+          el('div', { class: 'field' }, [el('label', { text: '默认关联知识点' }), kpSel])
+        ]),
+        el('div', { class: 'field', style: 'margin-bottom:12px' }, [el('label', { text: '来源标注' }), origin]),
+        drop,
+        el('div', { class: 'field', style: 'margin:10px 0' }, [el('label', { text: '（可选）选择本地文件' }), picker]),
+        el('div', { class: 'field', style: 'margin-bottom:12px' }, [el('label', { text: '或粘贴文本' }), paste]),
+        rep
+      ],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', 'data-primary-action': 'import-confirm', text: '确认导入', onclick: function () {
+            var recs = [];
+            results.forEach(function (r) { r.out.recs.forEach(function (x) { recs.push(x); }); });
+            var fromPaste = 0;
+            if (paste.value.trim()) {
+              var pr = W.parseFile('pasted.txt', paste.value);
+              fromPaste = pr.recs.length;
+              recs = recs.concat(pr.recs);
+              if (pr.fails.length) W.toast('粘贴文本有 ' + pr.fails.length + ' 条未识别（见报告）', 'bad');
+            }
+            if (!recs.length) { W.toast('还没有可导入的题目：拖入文件或粘贴文本', 'bad'); return; }
+            var n = doImport(recs);
+            m.close(); W.render();
+            W.toast('导入成功 ' + n + ' 题（文件 ' + (n - fromPaste) + ' + 粘贴 ' + fromPaste + '）', 'ok');
+            pState.idx = 0; pState.mode = 'all';
+          }
+        })
+      ]
+    });
+  }
+
+  /* ============ 科目视图注册 ============ */
+  function subjectView(view) {
+    var sid = DB().ui.tab.slice(4);
+    var sub = W.subjectById(sid);
+    var subs = [
+      { id: 'kp', name: '知识点掌握度' },
+      { id: 'wrong', name: '错题本' },
+      { id: 'practice', name: '模拟练习' }
+    ];
+    var box = el('div', { class: 'subtabs' }, subs.map(function (t) {
+      var n = t.id === 'kp' ? sub.sections.length + ' 节' : t.id === 'wrong' ? W.DB.wrongs.filter(function (w) { return w.subjectId === sid; }).length + ' 条' : W.DB.questions.filter(function (q) { return q.subjectId === sid; }).length + ' 题';
+      return el('button', { class: DB().ui.sub === t.id ? 'on' : '', html: esc(t.name) + '<span class="cnt">' + esc(n) + '</span>', onclick: function () { W.go({ sub: t.id }); } });
+    }));
+    /* 打卡入口 */
+    box.appendChild(el('button', {
+      class: 'btn small ghost', style: 'margin-left:auto', text: '＋ 记录今日学习',
+      onclick: function () { logForm(sid); }
+    }));
+    view.appendChild(box);
+    var sub2 = DB().ui.sub || 'kp';
+    if (sub2 === 'kp') kpBoard(view, sid);
+    else if (sub2 === 'wrong') wrongBoard(view, sid);
+    else practiceBoard(view, sid);
+  }
+
+  W.registerView('overview', overview);
+  W.registerView('subject', subjectView);
+  W.logForm = logForm;
+})();
+
+</script>
+<script>
+/* SECTION: plan —— 复习计划：勾选式任务清单 + 周视图 + 执行率 */
+(function () {
+  'use strict';
+  var W = window.WB, el = W.el, esc = W.esc, DB = function () { return W.DB; };
+  var filter = { sub: '', range: 'week', kw: '' };
+
+  function isoOf(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function weekDates(offset) {
+    var base = new Date();
+    var dow = (base.getDay() + 6) % 7; /* 周一为 0 */
+    var mon = new Date(base); mon.setDate(base.getDate() - dow + offset * 7);
+    var out = [];
+    for (var i = 0; i < 7; i++) { var d = new Date(mon); d.setDate(mon.getDate() + i); out.push(d); }
+    return out;
+  }
+  function dowName(d) { return ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(d.getDay() + 6) % 7]; }
+
+  function filtered() {
+    var d = DB();
+    var list = d.tasks.slice();
+    if (filter.sub) list = list.filter(function (t) { return t.subjectId === filter.sub; });
+    if (filter.kw) { var q = filter.kw.toLowerCase(); list = list.filter(function (t) { return t.title.toLowerCase().indexOf(q) > -1; }); }
+    if (filter.range === 'week') {
+      var set = {}; weekDates(0).forEach(function (x) { set[isoOf(x)] = 1; });
+      list = list.filter(function (t) { return !t.due || set[t.due]; });
+    } else if (filter.range === 'overdue') {
+      var t0 = W.today();
+      list = list.filter(function (t) { return !t.done && t.due && t.due < t0; });
+    } else if (filter.range === 'open') list = list.filter(function (t) { return !t.done; });
+    else if (filter.range === 'done') list = list.filter(function (t) { return t.done; });
+    list.sort(function (a, b) {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      var ad = a.due || '9999', bd = b.due || '9999';
+      if (ad !== bd) return ad < bd ? -1 : 1;
+      return (b.prio || 0) - (a.prio || 0);
+    });
+    return list;
+  }
+
+  function taskForm(sid, due, presetTitle, kpId) {
+    var d = DB();
+    var title = el('input', { type: 'text', value: presetTitle || '', placeholder: '例如：刷 20 道马原选择题 + 复盘错题' });
+    var sub = el('select', {}, d.subjects.map(function (s) { return el('option', { value: s.id, text: s.name, selected: s.id === (sid || d.subjects[0].id) ? 'selected' : null }); }));
+    var dueIn = el('input', { type: 'date', value: due || W.today() });
+    var mins = el('input', { type: 'number', value: '45', min: '5', max: '720' });
+    var prio = el('select', {}, [
+      el('option', { value: '1', text: '高（当天必做）' }),
+      el('option', { value: '0', text: '中（常规）', selected: 'selected' }),
+      el('option', { value: '-1', text: '低（有余力再做）' })
+    ]);
+    var m = W.modal({
+      title: '新增复习任务',
+      body: [
+        el('div', { class: 'field' }, [el('label', { text: '任务内容 *' }), title]),
+        el('div', { class: 'form-grid', style: 'margin-top:10px' }, [
+          el('div', { class: 'field' }, [el('label', { text: '科目' }), sub]),
+          el('div', { class: 'field' }, [el('label', { text: '计划日期' }), dueIn]),
+          el('div', { class: 'field' }, [el('label', { text: '预计分钟' }), mins]),
+          el('div', { class: 'field' }, [el('label', { text: '优先级' }), prio])
+        ]),
+        el('p', { class: 'hint', style: 'margin-top:8px', text: '不填日期 = 长期任务，不进入周视图排期但仍计入执行率。' })
+      ],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', text: '加入清单', onclick: function () {
+            if (!title.value.trim()) { W.toast('任务内容不能为空', 'bad'); return; }
+            d.tasks.push({
+              id: W.uid('tk'), title: title.value.trim(), subjectId: sub.value, due: dueIn.value || '',
+              minutes: parseInt(mins.value, 10) || 0, prio: parseInt(prio.value, 10), done: false,
+              kpId: kpId || null, created: W.today(), doneAt: null
+            });
+            W.save(); m.close(); W.render(); W.toast('已加入任务清单', 'ok');
+          }
+        })
+      ]
+    });
+  }
+
+  /* 从需巩固知识点批量生成任务 */
+  function genFromWeak() {
+    var d = DB();
+    var weak = d.kps.filter(function (k) { return k.status === 3 || k.status === 0; });
+    if (!weak.length) { W.toast('没有「需巩固 / 未学」的知识点，无需生成', 'bad'); return; }
+    var cbMap = new Map();
+    var box = el('div', { class: 'list' }, weak.slice(0, 60).map(function (k) {
+      var cb = el('input', { type: 'checkbox', checked: 'checked' });
+      cbMap.set(k.id, cb);
+      return el('div', { class: 'item', style: 'padding:8px 10px' }, [el('div', { style: 'display:flex;gap:8px;align-items:center' }, [
+        cb, el('span', { class: 'chip', text: W.subjectById(k.subjectId).short }),
+        el('span', { class: 'ttl', text: k.name, style: 'font-weight:600' }),
+        el('span', { class: 'chip ' + (k.status === 3 ? 'bad' : ''), text: window.SEED.kpStatuses[k.status] }
+        )])]);
+    }));
+    var days = el('input', { type: 'number', value: '7', min: '1', max: '60' });
+    var perDay = el('input', { type: 'number', value: '3', min: '1', max: '30' });
+    var m = W.modal({
+      title: '把薄弱知识点排进任务清单',
+      body: [
+        el('p', { class: 'sub', text: '勾选要补的知识点，下面填「未来 N 天、每天 M 项」，系统按日期均匀排布生成任务；生成后你仍可自由勾选完成。' }),
+        el('div', { class: 'form-grid', style: 'margin:10px 0' }, [
+          el('div', { class: 'field' }, [el('label', { text: '排在未来几天内' }), days]),
+          el('div', { class: 'field' }, [el('label', { text: '每天最多几项' }), perDay])
+        ]),
+        el('div', { style: 'max-height:240px;overflow:auto' }, [box])
+      ],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', text: '生成任务', onclick: function () {
+            var picked = weak.filter(function (k) { var c = cbMap.get(k.id); return c && c.checked; });
+            if (!picked.length) { W.toast('至少勾选一个知识点', 'bad'); return; }
+            var N = Math.max(1, parseInt(days.value, 10) || 7), P = Math.max(1, parseInt(perDay.value, 10) || 3);
+            var cap = N * P;
+            if (picked.length > cap) { W.toast('排期容量只有 ' + cap + ' 项（' + N + ' 天 × 每天 ' + P + '），已自动截断，剩余可再生成', 'bad'); picked = picked.slice(0, cap); }
+            var base = new Date(); var n = 0;
+            picked.forEach(function (k, i) {
+              var dayOff = Math.floor(i / P);
+              var dte = new Date(base); dte.setDate(base.getDate() + dayOff);
+              var s = W.subjectById(k.subjectId);
+              var secName = W.sectionName(s, k.sectionId);
+              k.status = k.status === 0 ? 1 : k.status;
+              d.tasks.push({
+                id: W.uid('tk'), title: '补弱：' + k.name + '（' + secName + '）', subjectId: k.subjectId,
+                due: isoOf(dte), minutes: 30, prio: k.status === 3 ? 1 : 0, done: false, kpId: k.id,
+                created: W.today(), doneAt: null
+              });
+              n++;
+            });
+            W.save(); m.close(); W.render();
+            W.toast('已生成 ' + n + ' 项补弱任务，排在 ' + N + ' 天内', 'ok');
+          }
+        })
+      ]
+    });
+  }
+
+  function planView(view) {
+    var d = DB();
+    var list = filtered();
+    var allTasks = d.tasks;
+    var doneAll = allTasks.filter(function (t) { return t.done; }).length;
+    var wk = weekDates(0), wkSet = {}; wk.forEach(function (x) { wkSet[isoOf(x)] = 1; });
+    var wkTasks = allTasks.filter(function (t) { return t.due && wkSet[t.due]; });
+    var wkDone = wkTasks.filter(function (t) { return t.done; }).length;
+    var rate = wkTasks.length ? Math.round(wkDone / wkTasks.length * 100) : 0;
+    var overdue = allTasks.filter(function (t) { return !t.done && t.due && t.due < W.today(); }).length;
+
+    view.appendChild(el('div', { class: 'grid g4', style: 'margin-bottom:14px' }, [
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: rate + '%' }), el('span', { class: 'lb', text: '本周计划执行率' }),
+        el('span', { class: 'fo', text: wkTasks.length ? '完成 ' + wkDone + ' / ' + wkTasks.length + ' 项' : '本周还没排任务' })]),
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: String(allTasks.length - doneAll) }), el('span', { class: 'lb', text: '未完成任务' }),
+        el('span', { class: 'fo ' + (overdue ? '' : 'up'), text: overdue ? '其中逾期 ' + overdue + ' 项' : '无逾期' })]),
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: String(doneAll) }), el('span', { class: 'lb', text: '累计完成' }),
+        el('span', { class: 'fo', text: '勾选即计入执行率' })]),
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: String(d.tasks.reduce(function (a, t) { return a + (t.done ? (t.minutes || 0) : 0); }, 0)) }),
+        el('span', { class: 'lb', text: '已完成任务计划分钟' }), el('span', { class: 'fo', text: '配合打卡看投入产出' })])
+    ]));
+
+    /* 工具条 */
+    view.appendChild(el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap' }, [
+        el('h3', { text: '任务清单', style: 'flex:1;min-width:120px' }),
+        el('button', { class: 'btn small primary', 'data-primary-action': 'task-add', text: '＋ 新建任务', onclick: function () { taskForm(); } }),
+        el('button', { class: 'btn small', 'data-primary-action': 'gen-weak', text: '按薄弱点生成', onclick: genFromWeak })
+      ]),
+      el('div', { class: 'form-grid', style: 'margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))' }, [
+        el('div', { class: 'field' }, [el('label', { text: '视图范围' }), el('select', { onchange: function (e) { filter.range = e.target.value; W.render(); } }, [
+          el('option', { value: 'week', text: '本周', selected: filter.range === 'week' ? 'selected' : null }),
+          el('option', { value: 'open', text: '全部未完成', selected: filter.range === 'open' ? 'selected' : null }),
+          el('option', { value: 'overdue', text: '仅逾期', selected: filter.range === 'overdue' ? 'selected' : null }),
+          el('option', { value: 'done', text: '已完成', selected: filter.range === 'done' ? 'selected' : null }),
+          el('option', { value: 'all', text: '全部任务', selected: filter.range === 'all' ? 'selected' : null })
+        ])]),
+        el('div', { class: 'field' }, [el('label', { text: '科目' }), el('select', { onchange: function (e) { filter.sub = e.target.value; W.render(); } },
+          [el('option', { value: '', text: '全部科目' })].concat(d.subjects.map(function (s) { return el('option', { value: s.id, text: s.name, selected: s.id === filter.sub ? 'selected' : null }); })))]),
+        el('div', { class: 'field' }, [el('label', { text: '关键词' }), el('input', { type: 'search', value: filter.kw, placeholder: '搜任务名', oninput: function (e) { filter.kw = e.target.value; clearTimeout(window.__pt); window.__pt = setTimeout(W.render, 260); } })])
+      ])
+    ]));
+
+    /* 周视图 */
+    if (filter.range === 'week') {
+      var grid = el('div', { class: 'weekgrid' });
+      wk.forEach(function (day) {
+        var iso = isoOf(day);
+        var ts = list.filter(function (t) { return t.due === iso; });
+        var isToday = iso === W.today();
+        var doneN = ts.filter(function (t) { return t.done; }).length;
+        grid.appendChild(el('div', { class: 'card', style: 'padding:10px;' + (isToday ? 'border-color:' + 'var(--accent)' + ';box-shadow:0 0 0 2px var(--accent-soft)' : '') }, [
+          el('div', { style: 'display:flex;align-items:baseline;gap:5px;margin-bottom:7px' }, [
+            el('b', { style: 'font-size:12.5px', text: dowName(day) }),
+            el('span', { class: 'meta', text: (day.getMonth() + 1) + '/' + day.getDate() + (isToday ? ' · 今天' : ''), style: 'font-size:10.5px;color:var(--ink3)' })
+          ]),
+          ts.length ? el('div', { style: 'display:flex;flex-direction:column;gap:5px' }, ts.slice(0, 6).map(function (t) {
+            var s = W.subjectById(t.subjectId);
+            return el('div', {
+              title: t.title, style: 'cursor:pointer;border-left:3px solid ' + s.color + ';padding:3px 5px;border-radius:4px;background:var(--gray-soft);font-size:11px;line-height:1.35;' + (t.done ? 'opacity:.55;text-decoration:line-through' : ''),
+              text: (t.title.length > 16 ? t.title.slice(0, 16) + '…' : t.title),
+              onclick: function () { W.go({ tab: 'sub:' + t.subjectId, sub: 'kp' }); }
+            });
+          })) : el('div', { style: 'font-size:11px;color:var(--ink3);padding:6px 2px', text: '—' }),
+          ts.length > 6 ? el('div', { class: 'meta', text: '共 ' + ts.length + ' 项', style: 'font-size:10.5px;color:var(--ink3);margin-top:4px' }) : null,
+          el('div', { style: 'margin-top:6px' }, [el('div', { class: 'progress' }, [el('i', { style: 'width:' + (ts.length ? doneN / ts.length * 100 : 0) + '%;background:' + (doneN === ts.length && ts.length ? '#12805c' : 'var(--accent)') })])]),
+          el('button', { class: 'linkbtn', style: 'font-size:10.5px;padding:2px 0', text: '＋加任务', onclick: function () { taskForm(null, iso); } })
+        ]));
+      });
+      view.appendChild(grid);
+    }
+
+    /* 列表 */
+    if (!list.length) {
+      view.appendChild(el('div', { class: 'empty', html: '<b>这个视图下没有任务</b>点「新建任务」自己排，或「按薄弱点生成」把需巩固的知识点排进未来几天' }));
+      return;
+    }
+    var rows = el('div', { class: 'list' });
+    list.forEach(function (t) {
+      var s = W.subjectById(t.subjectId);
+      var isOver = !t.done && t.due && t.due < W.today();
+      var cb = el('input', { type: 'checkbox', style: 'width:17px;height:17px;cursor:pointer;accent-color:var(--accent)' });
+      cb.checked = !!t.done;
+      cb.addEventListener('change', function () {
+        t.done = cb.checked;
+        t.doneAt = cb.checked ? W.today() : null;
+        if (cb.checked && t.kpId) { var kp = W.kpById(t.kpId); if (kp && kp.status < 2) kp.status = kp.status === 3 ? 1 : kp.status === 0 ? 1 : kp.status; }
+        W.save(); W.render();
+        W.toast(cb.checked ? '已完成：' + t.title.slice(0, 18) : '已恢复为未完成', 'ok');
+      });
+      var meta = [];
+      meta.push(el('span', { class: 'chip', text: s.short }));
+      if (t.due) meta.push(el('span', { class: 'chip ' + (isOver ? 'bad' : t.due === W.today() ? 'accent' : ''), text: (isOver ? '逾期 ' : '') + t.due.slice(5) }));
+      else meta.push(el('span', { class: 'chip', text: '长期' }));
+      if (t.minutes) meta.push(el('span', { class: 'chip', text: t.minutes + ' 分钟' }));
+      if (t.prio === 1) meta.push(el('span', { class: 'chip warn', text: '高优先' }));
+      if (t.prio === -1) meta.push(el('span', { class: 'chip', text: '低优先' }));
+      if (t.kpId && W.kpById(t.kpId)) meta.push(el('span', { class: 'chip', text: '→ ' + W.kpById(t.kpId).name }));
+      rows.appendChild(el('div', { class: 'item', style: 'display:flex;gap:10px;align-items:flex-start;' + (t.done ? 'opacity:.6' : '') }, [
+        cb,
+        el('div', { style: 'flex:1;min-width:0' }, [
+          el('div', { class: 'ttl', style: (t.done ? 'text-decoration:line-through;' : '') + 'font-weight:600;font-size:13.5px', text: t.title }),
+          el('div', { class: 'ft', style: 'margin-top:5px' }, meta)
+        ]),
+        el('div', { style: 'display:flex;flex-direction:column;gap:3px' }, [
+          el('button', { class: 'linkbtn', text: '改期', onclick: function () {
+            var inp = el('input', { type: 'date', value: t.due || W.today() });
+            var mm = W.modal({ title: '调整计划日期', body: [el('div', { class: 'field' }, [el('label', { text: t.title }), inp])], footer: [
+              el('button', { class: 'btn', text: '取消', onclick: function () { mm.close(); } }),
+              el('button', { class: 'btn primary', text: '保存', onclick: function () { t.due = inp.value; W.save(); mm.close(); W.render(); } })
+            ] });
+          } }),
+          el('button', { class: 'linkbtn', text: '删', onclick: function () {
+            W.confirmBox('删除任务', '「' + t.title.slice(0, 24) + '」将从清单移除。确定？', function () {
+              d.tasks = d.tasks.filter(function (x) { return x.id !== t.id; }); W.save(); W.render(); W.toast('已删除', 'ok');
+            }, '删除');
+          } })
+        ])
+      ]));
+    });
+    view.appendChild(rows);
+  }
+
+  W.registerView('plan', planView);
+  W.planTaskForm = taskForm;
+})();
+
+</script>
+<script>
+/* SECTION: library —— 资料库：知网检索直达 + 文献台账 + 百度网盘备份台账 */
+(function () {
+  'use strict';
+  var W = window.WB, el = W.el, esc = W.esc, DB = function () { return W.DB; };
+  var lf = { sub: '', kw: '' };
+
+  /* ---------- 知网检索直达（kns.cnki.net/kns8s/defaultresult/index?kw= 实测可用） ---------- */
+  function cnkiSearch(kw) {
+    var q = (kw || '').trim();
+    var url = q ? 'https://kns.cnki.net/kns8s/defaultresult/index?kw=' + encodeURIComponent(q) : 'https://kns.cnki.net/kns8s/';
+    window.open(url, '_blank', 'noopener');
+  }
+  function cnkiBox() {
+    var inp = el('input', { type: 'search', placeholder: '输入关键词，例如：页岩气 富集机理 / 构造演化 秦岭', style: 'flex:1;min-width:180px' });
+    var sel = el('select', { style: 'width:auto' }, [
+      el('option', { value: '', text: '全部库' }),
+      el('option', { value: '学术期刊', text: '学术期刊' }),
+      el('option', { value: '学位论文', text: '学位论文' }),
+      el('option', { value: '会议', text: '会议论文' })
+    ]);
+    function go() {
+      var q = inp.value.trim();
+      if (!q) { W.toast('先输入检索关键词', 'bad'); return; }
+      if (sel.value) q = q + ' ' + sel.value;
+      cnkiSearch(q);
+      W.toast('已在新标签页打开知网检索：' + q);
+    }
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
+    return el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;align-items:center' }, [
+        el('h3', { text: '知网检索直达', style: 'margin-right:auto' }),
+        el('span', { class: 'chip', text: '跳转官方检索页 · 登录状态由你在浏览器完成' })
+      ]),
+      el('p', { class: 'sub', style: 'margin:6px 0 10px', text: '输入关键词后回车或点按钮，会在新标签页打开中国知网（kns.cnki.net）检索结果页；把有价值的文献记进下面的台账即可。' }),
+      el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, [
+        inp, sel,
+        el('button', { class: 'btn primary', 'data-primary-action': 'cnki', text: '上知网检索 ↗', onclick: go })
+      ])
+    ]);
+  }
+
+  /* ---------- 文献台账 ---------- */
+  function refList() {
+    var d = DB();
+    var list = d.refs.slice();
+    if (lf.sub) list = list.filter(function (r) { return r.subjectId === lf.sub; });
+    if (lf.kw) {
+      var q = lf.kw.toLowerCase();
+      list = list.filter(function (r) { return (r.title + ' ' + (r.author || '') + ' ' + (r.note || '')).toLowerCase().indexOf(q) > -1; });
+    }
+    list.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+
+    var head = el('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px' }, [
+      el('h3', { text: '文献台账', style: 'flex:1;min-width:120px' }),
+      el('span', { class: 'chip accent', text: '共 ' + d.refs.length + ' 篇' + (list.length !== d.refs.length ? ' · 筛出 ' + list.length : '') }),
+      el('button', { class: 'btn small primary', 'data-primary-action': 'ref-add', text: '＋ 记一篇文献', onclick: function () { refForm(); } })
+    ]);
+    var filters = el('div', { class: 'form-grid', style: 'grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px' }, [
+      el('div', { class: 'field' }, [el('label', { text: '按科目' }), el('select', { onchange: function (e) { lf.sub = e.target.value; W.render(); } },
+        [el('option', { value: '', text: '全部科目' })].concat(d.subjects.map(function (s) { return el('option', { value: s.id, text: s.name, selected: s.id === lf.sub ? 'selected' : null }); })))]),
+      el('div', { class: 'field' }, [el('label', { text: '关键词' }), el('input', { type: 'search', value: lf.kw, placeholder: '标题/作者/结论', oninput: function (e) { lf.kw = e.target.value; clearTimeout(window.__rt); window.__rt = setTimeout(W.render, 260); } })])
+    ]);
+    var box = el('div', { class: 'card', style: 'margin-bottom:14px' }, [head, filters]);
+
+    if (!list.length) {
+      box.appendChild(el('div', { class: 'empty', html: '<b>台账还是空的</b>在知网看到有用的文献，记下标题和一句话结论，按科目归类' }));
+    } else {
+      var thead = el('thead', {}, [el('tr', {}, [el('th', { text: '标题' }), el('th', { text: '作者/年份' }), el('th', { text: '科目' }), el('th', { text: '一句话结论' }), el('th', { html: '&nbsp;' })])]);
+      var trs = list.map(function (r) {
+        var s = r.subjectId ? W.subjectById(r.subjectId) : null;
+        return el('tr', {}, [
+          el('td', { style: 'max-width:230px' }, [
+            r.url ? el('a', { href: r.url, target: '_blank', rel: 'noopener', text: r.title }) : el('span', { text: r.title }),
+            el('div', { class: 'meta', text: r.source || '' })
+          ]),
+          el('td', { text: (r.author || '—') + (r.year ? ' · ' + r.year : '') }),
+          el('td', {}, [s ? el('span', { class: 'chip', text: s.short }) : el('span', { class: 'meta', text: '未归类' })]),
+          el('td', { style: 'max-width:250px;font-size:12px;color:var(--ink2)', text: r.note || '' }),
+          el('td', { class: 'op' }, [
+            el('button', { class: 'linkbtn', text: '编辑', onclick: function () { refForm(r); } }),
+            el('button', { class: 'linkbtn', text: '删', onclick: function () {
+              W.confirmBox('删除文献', '「' + r.title.slice(0, 24) + '」将从台账移除。确定？', function () {
+                W.DB.refs = W.DB.refs.filter(function (x) { return x.id !== r.id; }); W.save(); W.render(); W.toast('已删除', 'ok');
+              }, '删除');
+            } })
+          ])
+        ]);
+      });
+      var table = el('table', { class: 'tbl' }, [thead, el('tbody', {}, trs)]);
+      box.appendChild(el('div', { style: 'overflow:auto' }, [table]));
+    }
+    return box;
+  }
+  function refForm(r) {
+    var d = DB();
+    var t = el('input', { type: 'text', value: r ? r.title : '', placeholder: '文献标题 *' });
+    var a = el('input', { type: 'text', value: r ? r.author || '' : '', placeholder: '作者，如 张三 等' });
+    var y = el('input', { type: 'text', value: r ? r.year || '' : '', placeholder: '年份，如 2024' });
+    var src = el('input', { type: 'text', value: r ? r.source || '' : '', placeholder: '出处：期刊/学位论文/会议' });
+    var url = el('input', { type: 'text', value: r ? r.url || '' : '', placeholder: '知网链接（可选，粘贴详情页 URL）' });
+    var sub = el('select', {}, [el('option', { value: '', text: '（不归类）' })].concat(d.subjects.map(function (x) { return el('option', { value: x.id, text: x.name, selected: r && r.subjectId === x.id ? 'selected' : null }); })));
+    var kp = el('select', {}, [el('option', { value: '', text: '（不关联）' })].concat(d.kps.filter(function (k) { return !r || !sub.value || k.subjectId === sub.value; }).map(function (k) { return el('option', { value: k.id, text: k.name, selected: r && r.kpId === k.id ? 'selected' : null }); })));
+    var note = el('textarea', { placeholder: '一句话结论 / 对我有什么用', style: 'min-height:56px' });
+    if (r) note.value = r.note || '';
+    sub.addEventListener('change', function () {
+      kp.innerHTML = '';
+      kp.appendChild(el('option', { value: '', text: '（不关联）' }));
+      d.kps.filter(function (k) { return !sub.value || k.subjectId === sub.value; }).forEach(function (k) { kp.appendChild(el('option', { value: k.id, text: k.name })); });
+    });
+    var m = W.modal({
+      title: r ? '编辑文献' : '记一篇文献',
+      body: [
+        el('div', { class: 'field' }, [el('label', { text: '标题 *' }), t]),
+        el('div', { class: 'form-grid', style: 'margin-top:10px' }, [
+          el('div', { class: 'field' }, [el('label', { text: '作者' }), a]),
+          el('div', { class: 'field' }, [el('label', { text: '年份' }), y]),
+          el('div', { class: 'field' }, [el('label', { text: '出处' }), src])
+        ]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '链接' }), url]),
+        el('div', { class: 'form-grid', style: 'margin-top:10px' }, [
+          el('div', { class: 'field' }, [el('label', { text: '科目' }), sub]),
+          el('div', { class: 'field' }, [el('label', { text: '关联知识点' }), kp])
+        ]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '一句话结论' }), note])
+      ],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', text: '保存', onclick: function () {
+            if (!t.value.trim()) { W.toast('标题必填', 'bad'); return; }
+            var patch = { title: t.value.trim(), author: a.value.trim(), year: y.value.trim(), source: src.value.trim(), url: url.value.trim(), subjectId: sub.value || null, kpId: kp.value || null, note: note.value.trim() };
+            if (r) Object.assign(r, patch);
+            else d.refs.push(Object.assign({ id: W.uid('rf'), ts: Date.now() }, patch));
+            W.save(); m.close(); W.render(); W.toast('文献已入台账', 'ok');
+          }
+        })
+      ]
+    });
+  }
+
+  /* ---------- 网盘备份台账 ---------- */
+  function backupBox() {
+    var d = DB();
+    var head = el('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px' }, [
+      el('h3', { text: '百度网盘 · 备份台账', style: 'flex:1;min-width:130px' }),
+      el('span', { class: 'chip', text: d.backups.length + ' 条记录' })
+    ]);
+    var box = el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      head,
+      el('p', { class: 'sub', style: 'margin:0 0 10px', text: '流程：点「导出备份文件」→ 浏览器下载一个 JSON → 拖进百度网盘（新标签页直达）→ 回到这里登记文件名与分享链接。页面不会自动上传任何东西。' }),
+      el('div', { class: 'btnrow', style: 'margin-bottom:12px' }, [
+        el('button', {
+          class: 'btn primary', 'data-primary-action': 'export', text: '① 导出备份文件', onclick: function () {
+            var fn = W.exportBackup();
+            regForm(fn);
+          }
+        }),
+        el('button', {
+          class: 'btn', text: '② 打开百度网盘上传 ↗', onclick: function () {
+            window.open('https://pan.baidu.com/disk/main#/index?category=all', '_blank', 'noopener');
+            W.toast('已打开网盘，把刚导出的 JSON 拖进去即可');
+          }
+        }),
+        el('button', {
+          class: 'btn', text: '③ 从文件恢复数据', onclick: function () {
+            var inp = el('input', { type: 'file', accept: '.json,application/json' });
+            inp.addEventListener('change', function () {
+              var f = inp.files[0]; if (!f) return;
+              var fr = new FileReader();
+              fr.onload = function () { W.readImported(f.name, fr.result); };
+              fr.readAsText(f, 'utf-8');
+            });
+            inp.click();
+          }
+        })
+      ])
+    ]);
+    if (!d.backups.length) {
+      box.appendChild(el('div', { class: 'empty', html: '<b>还没有备份记录</b>导出一次数据并登记链接，换电脑时能找回' }));
+    } else {
+      var rows = el('div', { class: 'list' });
+      d.backups.slice().sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); }).forEach(function (b) {
+        rows.appendChild(el('div', { class: 'item', style: 'padding:10px 12px' }, [
+          el('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap' }, [
+            el('span', { class: 'ttl', text: b.filename, style: 'font-weight:600' }),
+            el('span', { class: 'chip', text: b.date }),
+            b.shareUrl ? el('a', { class: 'chip accent', href: b.shareUrl, target: '_blank', rel: 'noopener', text: '打开网盘链接 ↗' }) : el('span', { class: 'chip warn', text: '未登记链接' }),
+            el('span', { style: 'flex:1' }),
+            el('button', { class: 'linkbtn', text: '补登记链接', onclick: function () { regForm(b.filename, b); } }),
+            el('button', { class: 'linkbtn', text: '删除记录', onclick: function () {
+              d.backups = d.backups.filter(function (x) { return x.id !== b.id; }); W.save(); W.render();
+            } })
+          ]),
+          b.note ? el('div', { class: 'meta', style: 'margin-top:4px', text: b.note }) : null
+        ]));
+      });
+      box.appendChild(rows);
+    }
+    return box;
+  }
+  function regForm(filename, existing) {
+    var d = DB();
+    var fn = el('input', { type: 'text', value: existing ? existing.filename : filename, placeholder: '网盘里的文件名' });
+    var url = el('input', { type: 'text', value: existing ? existing.shareUrl || '' : '', placeholder: '分享链接（可选）' });
+    var note = el('input', { type: 'text', value: existing ? existing.note || '' : '', placeholder: '备注，如「考前 30 天版」' });
+    var m = W.modal({
+      title: existing ? '更新备份记录' : '登记网盘备份',
+      body: [
+        el('div', { class: 'field' }, [el('label', { text: '文件名 *' }), fn]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '网盘分享链接' }), url]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '备注' }), note]),
+        el('p', { class: 'hint', style: 'margin-top:8px', text: '链接选填。建议上传完成后立即登记，方便换电脑时按日期找到最新一份。' })
+      ],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn primary', text: '保存记录', onclick: function () {
+            if (!fn.value.trim()) { W.toast('文件名必填', 'bad'); return; }
+            var patch = { filename: fn.value.trim(), shareUrl: url.value.trim(), note: note.value.trim() };
+            if (existing) Object.assign(existing, patch);
+            else d.backups.push(Object.assign({ id: W.uid('bk'), date: W.today(), ts: Date.now() }, patch));
+            W.save(); m.close(); W.render(); W.toast('备份记录已保存', 'ok');
+          }
+        })
+      ]
+    });
+  }
+
+  /* ---------- 视图 ---------- */
+  function libraryView(view) {
+    view.appendChild(cnkiBox());
+    view.appendChild(refList());
+    view.appendChild(backupBox());
+  }
+  W.registerView('library', libraryView);
+})();
+
+</script>
+<script>
+/* SECTION: settings —— 考试日期、每日目标、AI 服务配置、数据管理 */
+(function () {
+  'use strict';
+  var W = window.WB, el = W.el, esc = W.esc, DB = function () { return W.DB; };
+
+  function settingsView(view) {
+    var d = DB();
+
+    /* 考试日期 */
+    var rows = el('div', { class: 'form-grid' }, d.subjects.map(function (s) {
+      var inp = el('input', { type: 'date', value: s.examDate || '' });
+      inp.addEventListener('change', function () {
+        s.examDate = inp.value; W.save(); W.render();
+        W.toast(s.short + ' 考试日期已设为 ' + (inp.value || '空') + '，倒计时已更新', 'ok');
+      });
+      return el('div', { class: 'field' }, [
+        el('label', { text: s.name }),
+        inp,
+        el('span', { class: 'hint', text: s.examDate ? ('还剩 ' + W.daysLeft(s.examDate) + ' 天') : '未设置 · 留空则不参与倒计时' })
+      ]);
+    }));
+    view.appendChild(el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('h3', { text: '考试日期' }),
+      el('p', { class: 'sub', text: '填完后顶部倒计时、总览、任务排期都会自动联动；随时可清空。' }),
+      rows
+    ]));
+
+    /* 目标 */
+    var goal = el('input', { type: 'number', value: String(d.settings.goalDaily), min: '10', max: '720' });
+    goal.addEventListener('change', function () {
+      d.settings.goalDaily = Math.max(10, parseInt(goal.value, 10) || 120);
+      W.save(); W.render(); W.toast('每日目标已更新', 'ok');
+    });
+    view.appendChild(el('div', { class: 'grid g2', style: 'margin-bottom:14px' }, [
+      el('div', { class: 'card' }, [
+        el('h3', { text: '每日学习目标' }),
+        el('p', { class: 'sub', text: '打卡总分钟达到该值时，总览显示「已达成」' }),
+        el('div', { class: 'field' }, [el('label', { text: '每天目标学习分钟' }), goal])
+      ]),
+      el('div', { class: 'card' }, [
+        el('h3', { text: '科目色标与入口' }),
+        el('p', { class: 'sub', text: '点击直接进入该科' }),
+        el('div', { class: 'rowchips' }, d.subjects.map(function (s) {
+          return el('span', {
+            class: 'chip clickable', style: 'border-color:' + s.color + ';color:' + s.color, text: s.name,
+            onclick: function () { W.go({ tab: 'sub:' + s.id, sub: 'kp' }); }
+          });
+        }))
+      ])
+    ]));
+
+    /* AI 配置 */
+    var base = el('input', { type: 'text', value: d.settings.ai.baseUrl || '', placeholder: 'https://dashscope.aliyuncs.com/compatible-mode/v1' });
+    var key = el('input', { type: 'password', value: d.settings.ai.apiKey || '', placeholder: 'sk-…（仅保存在当前浏览器）', autocomplete: 'off' });
+    var model = el('input', { type: 'text', value: d.settings.ai.model || '', placeholder: 'qwen-plus / qwen-turbo 等' });
+    var show = el('input', { type: 'checkbox' });
+    show.addEventListener('change', function () { key.type = show.checked ? 'text' : 'password'; });
+    function apply() {
+      d.settings.ai.baseUrl = base.value.trim().replace(/\/+$/, '');
+      d.settings.ai.apiKey = key.value.trim();
+      d.settings.ai.model = model.value.trim();
+      W.save();
+      if (window.refreshAiChip) window.refreshAiChip();
+      W.toast(d.settings.ai.baseUrl && d.settings.ai.apiKey && d.settings.ai.model ? 'AI 配置已保存，左下角可直接提问' : '保存了，但三项都填完才能提问', 'ok');
+    }
+    [base, key, model].forEach(function (i) { i.addEventListener('change', apply); });
+    view.appendChild(el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('h3', { text: '左下角千问提问窗口 · 服务配置' }),
+      el('p', { class: 'sub', text: '填写一个 OpenAI 兼容接口的地址、密钥与模型名（例如阿里云百炼的 compatible-mode 端点）。保存后左下角面板即可对话。' }),
+      el('div', { class: 'form-grid', style: 'grid-template-columns:1fr' }, [
+        el('div', { class: 'field' }, [el('label', { text: '接口地址 Base URL' }), base,
+          el('span', { class: 'hint', text: '例：https://dashscope.aliyuncs.com/compatible-mode/v1（页面会自动拼 /chat/completions）' })]),
+        el('div', { class: 'field' }, [el('label', { text: 'API 密钥' }), key,
+          el('div', { style: 'display:flex;gap:6px;align-items:center;margin-top:2px' }, [show, el('span', { class: 'hint', text: '显示密钥' })])]),
+        el('div', { class: 'field' }, [el('label', { text: '模型名称' }), model])
+      ]),
+      el('div', { class: 'btnrow', style: 'margin-top:12px' }, [
+        el('button', { class: 'btn primary', text: '保存配置', onclick: apply }),
+        el('button', { class: 'btn', text: '测试连通', onclick: function () { apply(); window.aiTest(); } })
+      ]),
+      el('div', { class: 'warnbox', style: 'margin-top:12px', text: '注意：密钥只保存在这台电脑的浏览器本地，不会写进文件；每次提问时你输入的问题内容会发送到你填写的这个接口。用公共电脑请先清空本项并在设置底部重置数据。' })
+    ]));
+
+    /* 数据管理 */
+    var st = W.storeStatus();
+    var stat = [
+      ['知识点', d.kps.length], ['题库', d.questions.length], ['错题', d.wrongs.length],
+      ['打卡', d.logs.length], ['任务', d.tasks.length], ['文献', d.refs.length], ['备份记录', d.backups.length]
+    ];
+    view.appendChild(el('div', { class: 'card' }, [
+      el('h3', { text: '数据管理' }),
+      el('p', { class: 'sub', text: '所有数据只保存在当前浏览器本机，并每次自动多存一份镜像；每次打开页面都会自动读回你的历史记录，无需手动载入。清理浏览器数据或换电脑前，务必先导出备份。' }),
+      el('div', { class: 'rowchips', style: 'margin-bottom:12px' }, stat.map(function (x) {
+        return el('span', { class: 'chip', text: x[0] + ' ' + x[1] });
+      })),
+      el('div', { class: 'rowchips', style: 'margin-bottom:12px' }, [
+        el('span', { class: 'chip ' + (st.mainOk ? 'ok' : 'warn'), text: '主存档 ' + st.mainBytes + ' KB' + (st.mainOk ? ' · 可读' : ' · 异常') }),
+        el('span', { class: 'chip ' + (st.mirrorOk ? 'ok' : 'warn'), text: '自动镜像 ' + st.mirrorBytes + ' KB' + (st.mirrorOk ? ' · 可读' : ' · 无') }),
+        el('span', { class: 'chip', text: st.mirrorTime ? '镜像更新 ' + st.mirrorTime.slice(0, 16).replace('T', ' ') : '镜像未生成' }),
+        st.lastOpen ? el('span', { class: 'chip', text: '本次打开 ' + String(st.lastOpen).slice(0, 16).replace('T', ' ') }) : null,
+        st.salvaged ? el('button', { class: 'btn small', text: '取回损坏副本', onclick: function () { var n = W.exportSalvage(); if (n) W.toast('已下载 ' + n + '，把这份文件发给我即可尝试修复', 'ok'); } }) : null
+      ].filter(Boolean)),
+      el('div', { class: 'btnrow' }, [
+        el('button', {
+          class: 'btn primary', 'data-primary-action': 'export', text: '导出备份文件', onclick: function () {
+            var fn = W.exportBackup();
+            W.toast('已下载 ' + fn + '，拖进百度网盘即完成云端留存', 'ok');
+            W.go({ tab: 'library' });
+          }
+        }),
+        el('button', {
+          class: 'btn', text: '导入备份（合并）', onclick: function () { pickFile(function (name, txt) { W.readImported(name, txt); }); }
+        }),
+        el('button', {
+          class: 'btn', text: '导入备份（整体覆盖）', onclick: function () {
+            pickFile(function (name, txt) {
+              W.confirmBox('整体覆盖', '当前浏览器里的全部记录会被这份备份替换，无法撤销。建议先导出一次现有数据。确定继续？', function () {
+                try {
+                  var p = JSON.parse(txt);
+                  if (!p || !Array.isArray(p.subjects)) throw new Error('不是本工作台的备份文件');
+                  var ui = W.DB.ui;
+                  W.DB = Object.assign({ ui: ui }, p);
+                  W.save(); W.render(); W.toast('已整体恢复', 'ok');
+                } catch (e) { W.toast('导入失败：' + e.message, 'bad'); }
+              }, '覆盖');
+            });
+          }
+        }),
+        el('button', {
+          class: 'btn danger', text: '清空示例数据', onclick: function () {
+            W.confirmBox('清空示例数据', '会删掉预置的知识点与示例题，你自己的错题、打卡、任务、文献不受影响（除非它们关联到示例题）。确定？', function () {
+              var d2 = W.DB;
+              d2.kps = d2.kps.filter(function (k) { return String(k.id).indexOf('kp-') === 0 && !/^(kp-(zz|e1|m2|dk|ce)-\d+)$/.test(k.id); });
+              d2.questions = d2.questions.filter(function (q) { return q.origin && q.origin !== '示例'; });
+              W.save(); W.render(); W.toast('示例数据已清空，可去各科目页导入真题', 'ok');
+            }, '清空');
+          }
+        }),
+        el('button', {
+          class: 'btn danger', text: '重置整个工作台', onclick: function () {
+            W.confirmBox('重置工作台', '本机记录（错题、打卡、任务、文献、AI 对话与密钥配置）以及自动镜像都会被清除，回到初始状态。这一步无法撤销，确定？', function () {
+              W.hardReset(); W.render(); W.toast('已重置为初始工作台', 'ok');
+            }, '重置');
+          }
+        })
+      ])
+    ]));
+  }
+  function pickFile(cb) {
+    var inp = el('input', { type: 'file', accept: '.json,application/json' });
+    inp.addEventListener('change', function () {
+      var f = inp.files[0]; if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function () { cb(f.name, fr.result); };
+      fr.onerror = function () { W.toast('读取文件失败', 'bad'); };
+      fr.readAsText(f, 'utf-8');
+    });
+    inp.click();
+  }
+
+  W.registerView('settings', settingsView);
+})();
+
+</script>
+<script>
+/* SECTION: ai —— 左下角千问提问窗口：配置校验、对话、带入当前题目、答案归档 */
+(function () {
+  'use strict';
+  var W = window.WB, el = W.el, esc = W.esc, DB = function () { return W.DB; };
+  var pending = null;   /* 当前带入的题目上下文 */
+  var busy = false;
+
+  var SYS = '你是一位陪伴考研/语言学习的备考教练。回答要求：①直接针对问题；②先给结论再给推理；③涉及选择题时逐项说明对错原因；④给出可执行的下一步（该补哪个知识点、怎么防同类错）。控制篇幅，不超过 400 字。';
+  var TPLS = [
+    '这道题的干扰项是怎么设陷阱的？',
+    '把这个知识点讲成人话，并举一个例子',
+    '我这类错误反复出现，帮我定一个三步改进法',
+    '给我出 3 道同考点的变式题，带答案',
+    '把这段答案要点整理成可背诵的口诀'
+  ];
+
+  function cfg() { return DB().settings.ai || {}; }
+  function ready() { var c = cfg(); return !!(c.baseUrl && c.apiKey && c.model); }
+
+  function refreshChip() {
+    var chip = document.getElementById('aimodelchip');
+    if (!chip) return;
+    var c = cfg();
+    if (!ready()) { chip.className = 'chip warn'; chip.textContent = '未配置'; }
+    else { chip.className = 'chip ok'; chip.textContent = c.model; }
+  }
+
+  function openPanel() {
+    document.getElementById('aipanel').classList.remove('hidden');
+    paintMsgs();
+    var i = document.getElementById('aiinput');
+    if (i) setTimeout(function () { i.focus(); }, 60);
+  }
+  function closePanel() { document.getElementById('aipanel').classList.add('hidden'); }
+
+  function paintCtx() {
+    var box = document.getElementById('aictx');
+    if (!box) return;
+    box.innerHTML = '';
+    if (!pending) return;
+    box.appendChild(el('div', { class: 'ctxbox' }, [
+      el('span', { style: 'flex:1', text: '已带入：' + (pending.tag ? pending.tag + ' · ' : '') + pending.stem.slice(0, 62) + (pending.stem.length > 62 ? '…' : '') }),
+      el('span', { class: 'x', text: '✕', title: '移除', onclick: function () { pending = null; paintCtx(); } })
+    ]));
+  }
+  function attachAiQuestion(stem, tag, wrongId) {
+    pending = { stem: String(stem || '').slice(0, 1200), tag: tag || '', wrongId: wrongId || null };
+    openPanel();
+    paintCtx();
+    W.toast('已把题目带入提问框');
+  }
+
+  function bubble(role, text, extra) {
+    var n = el('div', { class: 'msg ' + (role === 'user' ? 'me' : role === 'sys' ? 'sys' : 'bot') });
+    if (role === 'bot') n.appendChild(el('span', { class: 'who', text: '千问' }));
+    if (role === 'user') n.appendChild(el('span', { class: 'who', text: '我' }));
+    n.appendChild(document.createTextNode(text));
+    if (extra) n.appendChild(extra);
+    return n;
+  }
+  function paintMsgs() {
+    var box = document.getElementById('aimsgs');
+    box.innerHTML = '';
+    var hist = DB().chat || [];
+    if (!hist.length) {
+      box.appendChild(bubble('sys', '这个窗口用于把疑问直接发给大模型。第一次使用请先在「设置 → 左下角千问提问窗口 · 服务配置」填接口地址、密钥和模型名。'));
+    }
+    hist.slice(-40).forEach(function (m) {
+      box.appendChild(bubble(m.role === 'user' ? 'user' : m.role === 'sys' ? 'sys' : 'bot', m.text, m.saveable ? saveBar(m) : null));
+    });
+    box.scrollTop = box.scrollHeight;
+  }
+  function saveBar(m) {
+    var bar = el('div', { class: 'act' });
+    bar.appendChild(el('button', { class: 'btn small', text: '存为本题 AI 解析', onclick: function () {
+      var d = DB();
+      if (m.linkedWrong) {
+        var w = W.wById(m.linkedWrong);
+        if (w) { w.aiTip = m.text; W.save(); W.render(); W.toast('已写入该错题的 AI 解析', 'ok'); return; }
+      }
+      if (pending) {
+        var sid = d.ui.tab.indexOf('sub:') === 0 ? d.ui.tab.slice(4) : d.subjects[0].id;
+        d.wrongs.push({
+          id: W.uid('w'), subjectId: sid, sectionId: '', kpId: null,
+          stem: pending.stem, answer: '', yourAnswer: '', analysis: '',
+          causes: ['思路缺失'], note: '', aiTip: m.text, date: W.today(), ts: Date.now(),
+          reviewed: false, qtype: 'subjective', origin: 'AI 归档'
+        });
+        W.save(); W.render(); W.toast('已连同题目一起存入错题本', 'ok');
+      } else W.toast('先带入一道题，或到错题本点「问 AI」', 'bad');
+    } }));
+    return bar;
+  }
+
+  function endpoint() { return cfg().baseUrl.replace(/\/+$/, '') + '/chat/completions'; }
+
+  async function send() {
+    if (busy) return;
+    var d = DB();
+    var inp = document.getElementById('aiinput');
+    var text = (inp.value || '').trim();
+    if (!text) { W.toast('先写一句你的问题', 'bad'); return; }
+    if (!ready()) {
+      var box0 = document.getElementById('aimsgs');
+      box0.appendChild(bubble('sys', '还没有配置模型服务。打开「设置」页，在「左下角千问提问窗口 · 服务配置」填三项：接口地址、API 密钥、模型名称，保存后回来再发。'));
+      box0.appendChild(el('div', { style: 'display:flex;justify-content:center;padding:4px' }, [
+        el('button', { class: 'btn small primary', text: '去设置填写', onclick: function () { closePanel(); W.go({ tab: 'settings' }); } })
+      ]));
+      box0.scrollTop = box0.scrollHeight;
+      return;
+    }
+    var c = cfg();
+    var full = pending ? '【题目】' + pending.stem + '\n\n【我的问题】' + text : text;
+
+    d.chat = d.chat || [];
+    d.chat.push({ role: 'user', text: full, ts: Date.now() });
+    W.save();
+    inp.value = '';
+    paintMsgs();
+
+    busy = true;
+    var sendBtn = document.getElementById('aisend');
+    sendBtn.disabled = true; sendBtn.textContent = '思考中…';
+
+    try {
+      var body = {
+        model: c.model,
+        messages: [{ role: 'system', content: SYS }].concat(
+          d.chat.slice(-14).map(function (m) { return { role: m.role === 'user' ? 'user' : 'assistant', content: m.text }; })
+        ),
+        stream: true
+      };
+      var res = await fetch(endpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.apiKey },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        var et = '';
+        try { et = (await res.text()).slice(0, 180); } catch (e) {}
+        throw new Error('接口返回 ' + res.status + (et ? '：' + et : ''));
+      }
+      var box2 = document.getElementById('aimsgs');
+      var node = bubble('bot', '…');
+      box2.appendChild(node); box2.scrollTop = box2.scrollHeight;
+      var txtNode = node.childNodes[node.childNodes.length - 1];
+      var acc = '';
+      if (res.body && res.body.getReader) {
+        var reader = res.body.getReader(), dec = new TextDecoder(), buf = '';
+        for (;;) {
+          var r = await reader.read();
+          if (r.done) break;
+          buf += dec.decode(r.value, { stream: true });
+          var lines = buf.split('\n'); buf = lines.pop();
+          for (var i = 0; i < lines.length; i++) {
+            var ln = lines[i].trim();
+            if (!ln || ln.indexOf('data:') !== 0) continue;
+            var payload = ln.slice(5).trim();
+            if (payload === '[DONE]') continue;
+            try {
+              var j = JSON.parse(payload);
+              var dl = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content;
+              if (dl) { acc += dl; txtNode.textContent = acc; box2.scrollTop = box2.scrollHeight; }
+            } catch (e) {}
+          }
+        }
+      }
+      if (!acc) {
+        var res2 = await fetch(endpoint(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.apiKey },
+          body: JSON.stringify(Object.assign({}, body, { stream: false }))
+        });
+        var jj = await res2.json();
+        acc = (jj.choices && jj.choices[0] && jj.choices[0].message && jj.choices[0].message.content) || '（没有收到内容，可能该模型不支持流式或返回结构不同）';
+        txtNode.textContent = acc;
+      }
+      d.chat.push({
+        role: 'assistant', text: acc, ts: Date.now(), saveable: true,
+        linkedWrong: pending && pending.wrongId ? pending.wrongId : null
+      });
+      W.save();
+      paintMsgs();
+    } catch (e) {
+      var mb = document.getElementById('aimsgs');
+      mb.appendChild(bubble('sys', '提问失败：' + (e.message || e) + '。常见原因：接口地址少了 /v1、密钥无效、模型名不存在，或服务端不允许浏览器直接跨域调用。'));
+      mb.scrollTop = mb.scrollHeight;
+    } finally {
+      busy = false;
+      sendBtn.disabled = false; sendBtn.textContent = '发送提问';
+    }
+  }
+
+  async function aiTest() {
+    var c = cfg();
+    if (!ready()) { W.toast('三项都填完才能测试', 'bad'); return; }
+    W.toast('正在向接口发一条测试请求…');
+    try {
+      var res = await fetch(endpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.apiKey },
+        body: JSON.stringify({ model: c.model, messages: [{ role: 'user', content: '只回复四个字：连通正常' }], stream: false })
+      });
+      if (res.ok) W.toast('连通正常：接口可用', 'ok');
+      else W.toast('接口返回 ' + res.status + '，请检查地址/密钥/模型名', 'bad');
+    } catch (e) {
+      W.toast('请求发不出去：' + (e.message || e), 'bad');
+    }
+  }
+
+  function tplMenu() {
+    var box = el('div', { style: 'display:flex;flex-direction:column;gap:6px' });
+    TPLS.forEach(function (t) {
+      box.appendChild(el('button', { class: 'btn', style: 'text-align:left', text: t, onclick: function () {
+        var i = document.getElementById('aiinput');
+        i.value = (i.value.trim() ? i.value.trim() + ' ' : '') + t;
+        i.focus(); mm.close();
+      } }));
+    });
+    var mm = W.modal({ title: '常用追问（点击填入输入框）', body: [box], footer: [el('button', { class: 'btn', text: '关闭', onclick: function () { mm.close(); } })] });
+  }
+
+  /* 练习页当前题暴露给「带入当前题目」 */
+  window.currentPracticeQuestion = window.currentPracticeQuestion || null;
+
+  function bind() {
+    document.getElementById('dockbtn').addEventListener('click', function () {
+      var p = document.getElementById('aipanel');
+      if (p.classList.contains('hidden')) openPanel(); else closePanel();
+    });
+    document.getElementById('aiclose').addEventListener('click', closePanel);
+    document.getElementById('aiclr').addEventListener('click', function () {
+      W.confirmBox('清空对话记录', '左下角面板的历史问答会被清除（错题本里已存的 AI 解析不受影响）。确定？', function () {
+        W.DB.chat = []; W.save(); paintMsgs(); W.toast('已清空', 'ok');
+      }, '清空');
+    });
+    document.getElementById('aisend').addEventListener('click', send);
+    document.getElementById('aitpl').addEventListener('click', tplMenu);
+    document.getElementById('aiattach').addEventListener('click', function () {
+      var d = DB();
+      if (d.ui.tab.indexOf('sub:') !== 0) { W.toast('先进入某个科目的练习或错题页，再点带入', 'bad'); return; }
+      var sid = d.ui.tab.slice(4);
+      if (d.ui.sub === 'wrong') {
+        var first = d.wrongs.filter(function (w) { return w.subjectId === sid; })[0];
+        if (!first) { W.toast('这一科还没有错题', 'bad'); return; }
+        pending = { stem: first.stem + (first.yourAnswer ? '\n我的作答：' + first.yourAnswer : ''), tag: '错题', wrongId: first.id };
+      } else {
+        var q = typeof window.currentPracticeQuestion === 'function' ? window.currentPracticeQuestion() : null;
+        if (!q) {
+          var pool = d.questions.filter(function (x) { return x.subjectId === sid; });
+          q = pool[0];
+        }
+        if (!q) { W.toast('这一科还没有题目，先去导入真题', 'bad'); return; }
+        pending = {
+          stem: q.stem + (q.options && q.options.length ? '\n' + q.options.map(function (o) { return o.k + '. ' + o.v; }).join('\n') : ''),
+          tag: W.subjectById(sid).short + ' 题目', qid: q.id
+        };
+      }
+      paintCtx();
+      W.toast('已带入当前题目');
+    });
+    document.getElementById('aiinput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); }
+    });
+    paintCtx();
+    refreshChip();
+  }
+
+  window.attachAiQuestion = attachAiQuestion;
+  window.refreshAiChip = refreshAiChip;
+  window.aiTest = aiTest;
+  W.bindAi = bind;
+})();
+
+</script>
+<script>
+/* SECTION: boot —— 启动顺序：载入数据 → 绑定搜索与 AI 面板 → 首屏渲染 */
+(function () {
+  'use strict';
+  var W = window.WB;
+  function start() {
+    W.load();
+    W.bindSearch();
+    if (W.bindAi) W.bindAi();
+    W.render();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+
+</script>
+</body>
+</html>
