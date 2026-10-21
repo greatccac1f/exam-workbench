@@ -139,6 +139,16 @@ hr.sep{border:0;border-top:1px solid var(--line2);margin:14px 0}
 .meter-row{display:grid;grid-template-columns:110px 1fr 42px;gap:10px;align-items:center;margin-bottom:9px;font-size:12.5px}
 .meter-row .v{text-align:right;color:var(--ink2);font-variant-numeric:tabular-nums}
 .weekgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.hgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.hgrid .hh{font-size:11.5px;color:var(--ink3);text-align:center;font-weight:600}
+.hgrid .hp{aspect-ratio:1/1}
+.hgrid .hd{aspect-ratio:1/1;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all .13s;padding:0}
+.hgrid .hd:hover{border-color:var(--accent)}
+.hgrid .hd .dn{font-size:13px;font-weight:650;color:var(--ink2)}
+.hgrid .hd .dc{font-size:11px;line-height:1;color:var(--accent);height:12px}
+.hgrid .hd.on{background:var(--ok-soft);border-color:var(--accent)}
+.hgrid .hd.on .dn{color:var(--accent2)}
+.hgrid .hd.today{outline:2px solid var(--accent);outline-offset:-2px}
 @media (max-width:900px){.weekgrid{display:flex;overflow-x:auto;padding-bottom:6px;gap:8px}.weekgrid>.card{min-width:150px;flex:0 0 auto}}
 
 /* ---------- lists / tables ---------- */
@@ -240,7 +250,7 @@ hr.sep{border:0;border-top:1px solid var(--line2);margin:14px 0}
       <div class="brand-mark">备</div>
       <div>
         <h1>备考工作台</h1>
-        <p>考研政治 · 英语一 · 数学二 · 地科 880 · 六级/雅思</p>
+        <p>考研政治 · 英语一 · 数学二 · 地科 880 · 六级/雅思 · 健身 · 自律打卡</p>
       </div>
     </div>
     <div class="searchbox">
@@ -276,7 +286,7 @@ hr.sep{border:0;border-top:1px solid var(--line2);margin:14px 0}
       </div>
     </div>
   </div>
-  <button class="dock-btn" id="dockbtn" aria-label="打开千问提问窗口">千问<br>AI</button>
+  <button class="dock-btn" id="dockbtn" aria-label="打开千问提问窗口" onclick="if(window.__dockBound)return;var q=document.getElementById('aipanel');if(q.classList.contains('hidden')){q.classList.remove('hidden');var i=document.getElementById('aiinput');if(i)setTimeout(function(){i.focus();},60);}else{q.classList.add('hidden');}">千问<br>AI</button>
 </div>
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
@@ -551,7 +561,8 @@ window.SEED = {
       version: 1,
       settings: {
         ai: { baseUrl: '', apiKey: '', model: '' },
-        goalDaily: 120
+        goalDaily: 120,
+        gymPlan: ['胸腹', '背腹', '肩手臂腹', null, '胸腹', '背腹', '肩手臂腹']
       },
       subjects: [],
       kps: [],
@@ -559,6 +570,8 @@ window.SEED = {
       wrongs: [],
       logs: [],
       tasks: [],
+      gym: [],
+      habit: [],
       refs: [],
       backups: [],
       chat: [],
@@ -596,6 +609,9 @@ window.SEED = {
     DB.settings = Object.assign({ ai: { baseUrl: '', apiKey: '', model: '' }, goalDaily: 120 }, p.settings || {});
     DB.ui = Object.assign({ tab: 'overview', subject: 'zz', sub: 'kp' }, p.ui || {});
     if (!DB.settings.ai) DB.settings.ai = { baseUrl: '', apiKey: '', model: '' };
+    if (!Array.isArray(DB.settings.gymPlan)) DB.settings.gymPlan = ['胸腹', '背腹', '肩手臂腹', null, '胸腹', '背腹', '肩手臂腹'];
+    if (!Array.isArray(DB.gym)) DB.gym = [];
+    if (!Array.isArray(DB.habit)) DB.habit = [];
     return DB;
   }
 
@@ -1164,7 +1180,7 @@ window.SEED = {
             DB[field].push(x); have[x.id] = 1; merged++;
           });
         }
-        ['kps', 'questions', 'wrongs', 'logs', 'tasks', 'refs', 'backups'].forEach(absorb);
+        ['kps', 'questions', 'wrongs', 'logs', 'tasks', 'gym', 'habit', 'refs', 'backups'].forEach(absorb);
         save();
         toast('合并导入完成：新增 ' + merged + ' 条，跳过重复 ' + skipped + ' 条');
       } else {
@@ -1188,6 +1204,8 @@ window.SEED = {
     { id: 'dks', name: '地科 880' },
     { id: 'ce', name: '六级/雅思' },
     { id: 'plan', name: '复习计划' },
+    { id: 'gym', name: '健身' },
+    { id: 'habit', name: '自律打卡' },
     { id: 'library', name: '资料库' },
     { id: 'settings', name: '设置' }
   ];
@@ -1301,6 +1319,7 @@ window.SEED = {
   window.WB = {
     KEY: KEY, MIRROR: MIRROR, SALVAGE: SALVAGE,
     load: load, save: save, get DB() { return DB; }, set DB(v) { DB = v; },
+    blankMerge: function (p) { hydrate(p); return DB; },
     storeStatus: storeStatus, hardReset: hardReset, exportSalvage: exportSalvage,
     uid: uid, today: today, esc: esc, el: el, daysLeft: daysLeft,
     subjectById: subjectById, sectionName: sectionName, kpById: kpById, qById: qById, wById: wById,
@@ -1404,6 +1423,9 @@ window.SEED = {
       ]);
     })));
 
+    /* 今日计划（可直接打勾） */
+    view.appendChild(dailyPlanCard());
+
     /* 错因分布 + 文献/备份摘要 */
     view.appendChild(el('div', { class: 'grid g2' }, [
       el('div', { class: 'card' }, [
@@ -1427,6 +1449,68 @@ window.SEED = {
         ])
       ])
     ]));
+  }
+
+  /* ============ 总览 · 今日计划卡片 ============ */
+  function dailyPlanCard() {
+    var d = DB(), t = W.today();
+    var open = d.tasks.filter(function (x) { return !x.done; });
+    var dueToday = open.filter(function (x) { return x.due && x.due <= t; });
+    var undated = open.filter(function (x) { return !x.due; }).slice(0, 4);
+    var list = dueToday.concat(undated);
+    var doneToday = d.tasks.filter(function (x) { return x.done && x.doneAt === t; }).length;
+
+    var head = el('div', { style: 'display:flex;align-items:center;gap:8px;flex-wrap:wrap' }, [
+      el('h3', { text: '每日计划', style: 'flex:1' }),
+      el('span', { class: 'chip' + (dueToday.length && !doneToday && list.length ? ' warn' : ''), text: '今日到期 ' + dueToday.length + ' 项' }),
+      el('span', { class: 'chip ok', text: '今日已完成 ' + doneToday + ' 项' }),
+      el('button', { class: 'btn small', text: '完整计划', onclick: function () { W.go({ tab: 'plan' }); } })
+    ]);
+    var card = el('div', { class: 'card', style: 'margin-bottom:14px' }, [head,
+      el('p', { class: 'sub', text: '到期任务自动出现在这里，打勾即完成 · 与复习计划数据互通' })]);
+
+    if (!list.length) {
+      card.appendChild(el('div', { class: 'empty', text: doneToday ? '今日任务已全部完成，明天见' : '今天没有到期任务，可快速加一条' }));
+    } else {
+      var wrap = el('div', { class: 'list' });
+      list.forEach(function (x) { wrap.appendChild(planRow(x)); });
+      card.appendChild(wrap);
+    }
+
+    var q = el('input', { type: 'text', placeholder: '快速添加今日任务，如：复盘政治马原错题 30 分钟', style: 'flex:1;min-width:200px' });
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
+    function add() {
+      var v = q.value.trim();
+      if (!v) { W.toast('先写任务内容', 'bad'); return; }
+      var sid = d.ui.tab.indexOf('sub:') === 0 ? d.ui.tab.slice(4) : d.subjects[0].id;
+      d.tasks.push({ id: W.uid('tk'), title: v, subjectId: sid, due: t, minutes: 0, prio: 0, done: false, kpId: null, created: t, doneAt: null });
+      W.save(); W.render(); W.toast('已加入今日计划', 'ok');
+    }
+    card.appendChild(el('div', { style: 'display:flex;gap:8px;margin-top:12px;flex-wrap:wrap' }, [
+      q, el('button', { class: 'btn small primary', text: '添加', onclick: add })
+    ]));
+    return card;
+  }
+  function planRow(x) {
+    var d = DB();
+    var s = W.subjectById(x.subjectId);
+    var overdue = x.due && x.due < W.today();
+    var cb = el('input', { type: 'checkbox', style: 'width:17px;height:17px;cursor:pointer;accent-color:var(--accent);flex:0 0 auto', onclick: function () {
+      x.done = cb.checked;
+      x.doneAt = x.done ? W.today() : null;
+      W.save(); W.render();
+      W.toast(x.done ? '完成：' + x.title.slice(0, 18) + (x.minutes ? '（' + x.minutes + ' 分钟已可打卡）' : '') : '已取消勾选', 'ok');
+    } });
+    cb.checked = !!x.done;
+    return el('div', { class: 'item', style: 'padding:9px 12px;display:flex;align-items:center;gap:10px' }, [
+      cb,
+      el('div', { style: 'flex:1;min-width:0' }, [
+        el('div', { style: 'font-weight:600' + (x.done ? ';text-decoration:line-through;color:var(--ink3)' : ''), text: x.title }),
+        el('div', { class: 'meta', text: s.short + ' · ' + (x.due ? (overdue ? '已逾期 ' + x.due : '今日到期') : '未设日期') + (x.minutes ? ' · ' + x.minutes + ' 分钟' : '') })
+      ]),
+      x.prio >= 1 && !x.done ? el('span', { class: 'chip warn', text: '优先' }) : el('span'),
+      el('button', { class: 'btn small ghost', text: '↗ 计划页', onclick: function () { W.go({ tab: 'plan' }); } })
+    ]);
   }
 
   /* ============ 打卡记录 ============ */
@@ -2333,6 +2417,368 @@ window.SEED = {
 
 </script>
 <script>
+/* SECTION: gym —— 健身：每周六练 · 周四休息 · 五六日循环周一二三；一键对勾打卡与统计 */
+(function () {
+  'use strict';
+  var W = window.WB, el = W.el, esc = W.esc, DB = function () { return W.DB; };
+  var DAY_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+  function plan() {
+    var p = DB().settings.gymPlan;
+    return (Array.isArray(p) && p.length === 7) ? p : ['胸腹', '背腹', '肩手臂腹', null, '胸腹', '背腹', '肩手臂腹'];
+  }
+  function dayIso(offset) {
+    var d = new Date(); d.setDate(d.getDate() + offset);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function weekDates() {
+    var dow = (new Date().getDay() + 6) % 7;
+    var out = [];
+    for (var i = 0; i < 7; i++) out.push(dayIso(i - dow));
+    return out;
+  }
+  function recOf(iso) {
+    var g = DB().gym;
+    for (var i = 0; i < g.length; i++) if (g[i].date === iso) return g[i];
+    return null;
+  }
+  function setRec(iso, patch) {
+    var g = DB().gym, rec = null, i;
+    for (i = 0; i < g.length; i++) if (g[i].date === iso) { rec = g[i]; break; }
+    if (!rec) { rec = { id: W.uid('g'), date: iso, done: false, minutes: 0 }; g.push(rec); }
+    Object.assign(rec, patch);
+    if (!rec.done && !rec.minutes && !rec.note) {
+      DB().gym = g.filter(function (x) { return x.id !== rec.id; });
+    }
+    W.save();
+  }
+  function dowOf(iso) { return (new Date(iso + 'T00:00:00').getDay() + 6) % 7; }
+  function expectText(dowIdx) {
+    var v = plan()[dowIdx];
+    return (v === null || v === undefined || v === '') ? '休息' : String(v);
+  }
+  function stats() {
+    var d = DB(), wd = weekDates();
+    var weekDone = 0, weekMin = 0, monthKey = W.today().slice(0, 7), monthDone = 0, streakW = 0;
+    wd.forEach(function (iso) {
+      var r = recOf(iso);
+      if (r && r.done) { weekDone++; weekMin += r.minutes || 0; }
+    });
+    d.gym.forEach(function (r) { if (r.done && r.date.slice(0, 7) === monthKey) monthDone++; });
+    /* 连续达标周：每周完成≥5次算达标，从本周往前数 */
+    var weekSet = {};
+    d.gym.forEach(function (r) { if (r.done) weekSet[r.date] = 1; });
+    function doneInWeek(mondayIso) {
+      var n = 0;
+      for (var k = 0; k < 7; k++) {
+        var dd = new Date(mondayIso + 'T00:00:00'); dd.setDate(dd.getDate() + k);
+        var iso = dd.getFullYear() + '-' + String(dd.getMonth() + 1).padStart(2, '0') + '-' + String(dd.getDate()).padStart(2, '0');
+        if (weekSet[iso]) n++;
+      }
+      return n;
+    }
+    var monday = new Date(); monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    for (;;) {
+      var mIso = monday.getFullYear() + '-' + String(monday.getMonth() + 1).padStart(2, '0') + '-' + String(monday.getDate()).padStart(2, '0');
+      var cnt = doneInWeek(mIso);
+      if (cnt >= 5) { streakW++; }
+      else if (mIso !== weekDates()[0]) break;
+      monday.setDate(monday.getDate() - 7);
+      if (streakW > 200) break;
+    }
+    return { weekDone: weekDone, weekMin: weekMin, monthDone: monthDone, streakW: streakW };
+  }
+
+  function editRec(rec) {
+    var fMin = el('input', { type: 'number', min: '0', max: '600', value: String(rec.minutes || 0) });
+    var fNote = el('input', { type: 'text', value: rec.note || '', placeholder: '今天练了什么、状态如何（可选）' });
+    var m = W.modal({
+      title: '修改 ' + rec.date + ' 的训练记录',
+      body: [
+        el('div', { class: 'field' }, [el('label', { text: '时长（分钟）' }), fMin]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '备注' }), fNote])
+      ],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', { class: 'btn primary', text: '保存', onclick: function () {
+          rec.minutes = Math.max(0, Math.min(600, parseInt(fMin.value, 10) || 0));
+          rec.note = fNote.value.trim();
+          W.save(); m.close(); W.render(); W.toast('记录已更新', 'ok');
+        } })
+      ]
+    });
+  }
+
+  function editPlan() {
+    var cur = plan().slice();
+    var rows = [];
+    for (var i = 0; i < 7; i++) {
+      rows.push(el('input', { type: 'text', value: cur[i] === null || cur[i] === undefined ? '' : String(cur[i]), placeholder: '留空 = 休息日' }));
+    }
+    var body = [el('p', { text: '按周一到周日填每天训练部位；某格留空表示那天休息。当前默认：周一胸腹 / 周二背腹 / 周三肩手臂腹 / 周四休息 / 周五胸腹 / 周六背腹 / 周日肩手臂腹。', style: 'margin:0 0 10px;font-size:12px;color:var(--ink3)' })];
+    for (var r = 0; r < 7; r++) {
+      body.push(el('div', { class: 'field', style: 'display:grid;grid-template-columns:64px 1fr;align-items:center;gap:10px;margin-bottom:8px' }, [
+        el('label', { text: DAY_NAMES[r], style: 'font-size:13px' }), rows[r]]));
+    }
+    var m = W.modal({
+      title: '调整每周训练安排',
+      body: body,
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', { class: 'btn primary', text: '保存安排', onclick: function () {
+          DB().settings.gymPlan = rows.map(function (x) { var v = x.value.trim(); return v || null; });
+          W.save(); m.close(); W.render(); W.toast('周计划已更新', 'ok');
+        } })
+      ]
+    });
+  }
+
+  function toggle(iso, dowIdx, nowDone) {
+    if (nowDone) {
+      setRec(iso, { done: false });
+      W.toast(DAY_NAMES[dowIdx] + ' 已取消打卡', 'ok');
+    } else {
+      setRec(iso, { done: true, minutes: 60 });
+      W.toast(DAY_NAMES[dowIdx] + ' 打卡完成 ✓（默认 60 分钟，点时长标签可改）', 'ok');
+    }
+    W.render();
+  }
+
+  function dayCard(iso, dowIdx) {
+    var rec = recOf(iso);
+    var exp = expectText(dowIdx);
+    var isToday = iso === W.today();
+    var done = !!(rec && rec.done);
+    var kids = [
+      el('div', { style: 'display:flex;gap:8px;align-items:center;margin-bottom:8px' }, [
+        el('button', {
+          title: done ? '点击取消打卡' : '点击打卡',
+          text: '✓',
+          style: 'width:26px;height:26px;border-radius:50%;flex:0 0 auto;font-size:15px;line-height:1;cursor:pointer;' +
+            (done ? 'background:var(--ok);border:1.5px solid var(--ok);color:#fff'
+                  : 'background:#fff;border:1.5px solid var(--line2);color:transparent'),
+          onclick: function () { toggle(iso, dowIdx, done); }
+        }),
+        el('span', { text: DAY_NAMES[dowIdx] + (isToday ? ' · 今天' : ''), style: 'font-weight:650;font-size:13px' })
+      ]),
+      el('div', { class: 'rowchips' }, [
+        el('span', { class: 'chip' + (exp === '休息' ? '' : ' accent'), text: exp }),
+        rec && rec.minutes ? el('span', { class: 'chip ok clickable', text: rec.minutes + ' 分钟', title: '点击修改时长与备注',
+          onclick: function () { if (rec) editRec(rec); } }) : null
+      ])
+    ];
+    return el('div', { class: 'card', style: 'padding:12px' + (isToday ? ';outline:2px solid var(--accent)' : '') + (done ? ';background:var(--ok-soft)' : '') }, kids);
+  }
+
+  function delRec(id) {
+    DB().gym = DB().gym.filter(function (x) { return x.id !== id; });
+    W.save();
+  }
+
+  function openLog() {
+    var fDate = el('input', { type: 'date', value: W.today() });
+    var fMin = el('input', { type: 'number', value: '60', min: '0', max: '600' });
+    var fNote = el('input', { type: 'text', placeholder: '练了什么、状态如何（可选）' });
+    var fDone = el('input', { type: 'checkbox', checked: true, style: 'width:17px;height:17px;accent-color:var(--accent)' });
+    var m = W.modal({
+      title: '补记一次训练',
+      body: [
+        el('div', { class: 'field' }, [el('label', { text: '日期' }), fDate]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '时长（分钟）' }), fMin]),
+        el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: '备注' }), fNote]),
+        el('label', { style: 'display:flex;align-items:center;gap:8px;font-size:13px;margin-top:12px' }, [fDone, el('span', { text: '标记为已完成打卡' })])
+      ],
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', { class: 'btn primary', text: '保存', onclick: function () {
+          var iso = fDate.value;
+          if (!iso) { W.toast('请选择日期', 'bad'); return; }
+          setRec(iso, { done: fDone.checked, minutes: Math.max(0, Math.min(600, parseInt(fMin.value, 10) || 0)), note: fNote.value.trim() });
+          m.close(); W.render(); W.toast('已保存 ' + iso + ' 的训练记录', 'ok');
+        } })
+      ]
+    });
+  }
+
+  function view(v) {
+    var d = DB();
+    v.appendChild(el('h2', { text: '健身', style: 'margin:0 0 4px' }));
+    v.appendChild(el('p', { text: '每周六练 · 周四休息 · 周五至周日循环周一二三的安排（点「调整安排」可改）。点日期旁的圆圈即打卡，再点取消；默认 60 分钟，点时长标签可改并加备注。', style: 'margin:0 0 14px;font-size:12.5px;color:var(--ink3)' }));
+
+    var st = stats();
+    v.appendChild(el('div', { class: 'grid g4', style: 'margin-bottom:14px' }, [
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: st.weekDone + '/6' }), el('span', { class: 'lb', text: '本周已完成次数（目标 6）' })]),
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: st.weekMin }), el('span', { class: 'lb', text: '本周训练总时长（分钟）' })]),
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: st.monthDone }), el('span', { class: 'lb', text: '本月已完成次数' })]),
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: st.streakW }), el('span', { class: 'lb', text: '连续达标周数（每周≥5练）' })])
+    ]));
+
+    var wd = weekDates();
+    var grid = el('div', { class: 'weekgrid' });
+    for (var i = 0; i < 7; i++) grid.appendChild(dayCard(wd[i], i));
+    v.appendChild(el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('h3', { text: '本周' }),
+      el('p', { class: 'sub', text: '周一起排，点圆圈打卡；今天的格子有高亮边框。' }),
+      grid
+    ]));
+
+    v.appendChild(el('div', { class: 'btnrow', style: 'margin-bottom:16px' }, [
+      el('button', { class: 'btn', text: '调整每周安排', onclick: editPlan }),
+      el('button', { class: 'btn', text: '补记一次训练', onclick: openLog })
+    ]));
+
+    v.appendChild(el('h3', { text: '训练记录', style: 'margin:6px 0 8px' }));
+    var hs = d.gym.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).slice(0, 60);
+    if (!hs.length) {
+      v.appendChild(el('div', { class: 'empty', html: '<b>还没有训练记录</b>完成一次训练后，在本周的日期格点圆圈即可。' }));
+      return;
+    }
+    var tb = el('table', { class: 'tbl' });
+    tb.appendChild(el('thead', {}, [el('tr', {}, [
+      el('th', { text: '日期' }), el('th', { text: '星期' }), el('th', { text: '计划部位' }),
+      el('th', { text: '完成' }), el('th', { text: '时长' }), el('th', { text: '备注' }), el('th', {})
+    ])]));
+    var tbody = el('tbody');
+    hs.forEach(function (r) {
+      var di = dowOf(r.date);
+      tbody.appendChild(el('tr', {}, [
+        el('td', { class: 'num', text: r.date }),
+        el('td', { text: DAY_NAMES[di] }),
+        el('td', { text: expectText(di) }),
+        el('td', { html: r.done ? '<span class="chip ok">已打卡</span>' : '<span class="chip">未打卡</span>' }),
+        el('td', { class: 'num', text: r.minutes ? r.minutes + ' 分钟' : '—' }),
+        el('td', { text: r.note || '—', style: 'max-width:220px' }),
+        el('td', { class: 'op' }, [
+          el('button', { class: 'linkbtn', text: '编辑', onclick: function () { editRec(r); } }),
+          el('button', { class: 'linkbtn', text: '删除', style: 'color:var(--bad)', onclick: function () {
+            W.confirmBox('删除记录', '确定删除 ' + r.date + ' 的训练记录？', function () { delRec(r.id); W.render(); });
+          } })
+        ])
+      ]));
+    });
+    tb.appendChild(tbody);
+    v.appendChild(tb);
+  }
+
+  W.registerView('gym', view);
+})();
+
+
+
+</script>
+<script>
+/* SECTION: habit —— 自律打卡：按月日历点日期打勾/取消，本月天数、连续天数、累计天数统计 */
+(function () {
+  'use strict';
+  var W = window.WB, el = W.el, DB = function () { return W.DB; };
+
+  var cur = null; /* 当前查看月份 {y, m}，null 表示本月 */
+
+  function ymNow() {
+    var n = new Date();
+    return { y: n.getFullYear(), m: n.getMonth() + 1 };
+  }
+  function curYM() { return cur || ymNow(); }
+  function shift(delta) {
+    var ym = curYM();
+    var d = new Date(ym.y, ym.m - 1 + delta, 1);
+    cur = { y: d.getFullYear(), m: d.getMonth() + 1 };
+    W.render();
+  }
+  function list() {
+    var h = DB().habit;
+    return Array.isArray(h) ? h : [];
+  }
+  function setOf() {
+    var s = {};
+    list().forEach(function (iso) { s[iso] = 1; });
+    return s;
+  }
+  function monthCount(y, m) {
+    var k = y + '-' + String(m).padStart(2, '0');
+    return list().filter(function (iso) { return iso.slice(0, 7) === k; }).length;
+  }
+  function streak() {
+    var s = setOf(), n = 0;
+    var d = new Date();
+    if (!s[W.today()]) d.setDate(d.getDate() - 1);
+    for (;;) {
+      var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      if (!s[iso]) break;
+      n++;
+      d.setDate(d.getDate() - 1);
+      if (n > 3650) break;
+    }
+    return n;
+  }
+  function toggle(iso) {
+    var h = DB().habit;
+    if (!Array.isArray(h)) { h = []; DB().habit = h; }
+    var i = h.indexOf(iso);
+    if (i >= 0) { h.splice(i, 1); W.toast('已取消 ' + iso + ' 的打卡'); }
+    else { h.push(iso); W.toast('打卡 ' + iso + ' ✓', 'ok'); }
+    W.save();
+    W.render();
+  }
+
+  function calendar(v) {
+    var ym = curYM(), s = setOf(), today = W.today();
+    var isNow = ym.y === ymNow().y && ym.m === ymNow().m;
+    var first = new Date(ym.y, ym.m - 1, 1);
+    var pad = (first.getDay() + 6) % 7;
+    var n = new Date(ym.y, ym.m, 0).getDate();
+    var grid = el('div', { class: 'hgrid' });
+    ['一', '二', '三', '四', '五', '六', '日'].forEach(function (h) {
+      grid.appendChild(el('div', { class: 'hh', text: h }));
+    });
+    for (var p = 0; p < pad; p++) grid.appendChild(el('div', { class: 'hp' }));
+    for (var day = 1; day <= n; day++) {
+      (function (day) {
+        var iso = ym.y + '-' + String(ym.m).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+        var on = !!s[iso];
+        grid.appendChild(el('button', {
+          class: 'hd' + (on ? ' on' : '') + (iso === today ? ' today' : ''),
+          title: iso + (on ? '（已打卡，点击取消）' : '（点击打卡）'),
+          onclick: function () { toggle(iso); }
+        }, [el('span', { class: 'dn', text: String(day) }), el('span', { class: 'dc', text: on ? '✓' : '' })]));
+      })(day);
+    }
+    var nav = el('div', { class: 'btnrow', style: 'margin-bottom:10px' }, [
+      el('button', { class: 'btn small', text: '← 上月', onclick: function () { shift(-1); } }),
+      el('span', { class: 'sub', text: ym.y + ' 年 ' + ym.m + ' 月', style: 'align-self:center;font-size:14px;font-weight:650' }),
+      el('button', { class: 'btn small', text: isNow ? '本月' : '回到本月', onclick: function () { cur = null; W.render(); } }),
+      el('button', { class: 'btn small', text: '下月 →', onclick: function () { shift(1); } })
+    ]);
+    v.appendChild(el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('h3', { text: '点日期打勾' }),
+      nav,
+      grid,
+      el('p', { class: 'sub', text: '一格一次，点击切换；今天的格子有高亮边框。' })
+    ]));
+  }
+
+  function view(v) {
+    var ym = curYM();
+    v.appendChild(el('h2', { text: '自律打卡', style: 'margin:0 0 4px' }));
+    v.appendChild(el('p', { text: '只记“有没有做到”，按月回看坚持痕迹。', style: 'margin:0 0 14px;font-size:12.5px;color:var(--ink3)' }));
+
+    var st = { month: monthCount(ym.y, ym.m), streak: streak(), total: list().length };
+    v.appendChild(el('div', { class: 'grid g3', style: 'margin-bottom:14px' }, [
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: String(st.month) }), el('span', { class: 'lb', text: (ym.m) + ' 月已打卡天数' })]),
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: String(st.streak) }), el('span', { class: 'lb', text: '连续天数（今天未打则从昨天起算）' })]),
+      el('div', { class: 'card kpi' }, [el('b', { class: 'num', text: String(st.total) }), el('span', { class: 'lb', text: '累计打卡总天数' })])
+    ]));
+
+    calendar(v);
+
+    v.appendChild(el('p', { class: 'sub', text: '数据与其他记录一起存在本机浏览器，导出/导入备份会包含打卡。' }));
+  }
+
+  W.registerView('habit', view);
+})();
+
+</script>
+<script>
 /* SECTION: library —— 资料库：知网检索直达 + 文献台账 + 百度网盘备份台账 */
 (function () {
   'use strict';
@@ -2482,7 +2928,7 @@ window.SEED = {
     ]);
     var box = el('div', { class: 'card', style: 'margin-bottom:14px' }, [
       head,
-      el('p', { class: 'sub', style: 'margin:0 0 10px', text: '流程：点「导出备份文件」→ 浏览器下载一个 JSON → 拖进百度网盘（新标签页直达）→ 回到这里登记文件名与分享链接。页面不会自动上传任何东西。' }),
+      el('p', { class: 'sub', style: 'margin:0 0 10px', text: '导出流程：点「导出备份文件」→ 浏览器下载一个 JSON → 拖进百度网盘（新标签页直达）→ 回到这里登记文件名与分享链接。导入流程：打开网盘把备份 JSON 下载到本机 → 点「从网盘导入备份」选该文件 → 选择合并或整体覆盖。页面不自动上传或下载网盘内容。' }),
       el('div', { class: 'btnrow', style: 'margin-bottom:12px' }, [
         el('button', {
           class: 'btn primary', 'data-primary-action': 'export', text: '① 导出备份文件', onclick: function () {
@@ -2508,6 +2954,21 @@ window.SEED = {
             inp.click();
           }
         })
+      ]),
+      el('div', { style: 'border-top:1px solid var(--line2);padding-top:10px;margin-bottom:4px' }, [
+        el('div', { class: 'btnrow' }, [
+          el('span', { class: 'chip accent', text: '从网盘导入' }),
+          el('button', {
+            class: 'btn', text: '打开网盘取备份文件 ↗', onclick: function () {
+              window.open('https://pan.baidu.com/disk/main#/index?category=4', '_blank', 'noopener');
+              W.toast('在网盘里找到备份 JSON，先点下载到本机（一般在浏览器下载目录），再点右侧导入');
+            }
+          }),
+          el('button', {
+            class: 'btn primary', 'data-primary-action': 'import-disk', text: '导入网盘下载的备份', onclick: importFromDisk
+          })
+        ]),
+        el('p', { class: 'hint', text: '导入时会让你选：合并（补入新记录，同 ID 跳过）或整体覆盖（用备份替换本机当前全部数据）。' })
       ])
     ]);
     if (!d.backups.length) {
@@ -2532,6 +2993,55 @@ window.SEED = {
       box.appendChild(rows);
     }
     return box;
+  }
+  /* 从网盘下载的备份导入：先校验，再选合并/覆盖 */
+  function importFromDisk() {
+    var inp = el('input', { type: 'file', accept: '.json,application/json' });
+    inp.addEventListener('change', function () {
+      var f = inp.files[0]; if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function () {
+        var p = null;
+        try { p = JSON.parse(fr.result); } catch (e) {}
+        if (!p || !Array.isArray(p.subjects) || !p.subjects.length) {
+          W.toast('这个文件不是工作台备份（应选「备考工作台备份-日期.json」）', 'bad', 4200);
+          return;
+        }
+        askMode(f.name, fr.result, p);
+      };
+      fr.onerror = function () { W.toast('读取文件失败，重新下载后再试', 'bad'); };
+      fr.readAsText(f, 'utf-8');
+    });
+    inp.click();
+  }
+  function askMode(name, text, p) {
+    function n(k) { return Array.isArray(p[k]) ? p[k].length : 0; }
+    var meta = p.meta || {};
+    var body = [
+      el('p', { class: 'sub', text: '备份内容：知识点 ' + n('kps') + ' · 题库 ' + n('questions') + ' · 错题 ' + n('wrongs') + ' · 打卡 ' + n('logs') + ' · 任务 ' + n('tasks') + ' · 健身 ' + n('gym') + ' · 自律 ' + n('habit') + ' · 文献 ' + n('refs') + (meta.mirrorAt ? ' · 备份自 ' + String(meta.mirrorAt).slice(0, 16).replace('T', ' ') : ''), style: 'margin:0 0 10px' }),
+      el('div', { class: 'warnbox', text: '整体覆盖会用这份备份替换本机当前的全部记录（含本机新录但备份里没有的内容）；不确定就选合并，已有同 ID 记录不会重复。' })
+    ];
+    var m = W.modal({
+      title: '导入备份：' + name,
+      body: body,
+      footer: [
+        el('button', { class: 'btn', text: '取消', onclick: function () { m.close(); } }),
+        el('button', {
+          class: 'btn', text: '合并导入（安全）', onclick: function () {
+            m.close(); W.readImported(name, text);
+          }
+        }),
+        el('button', {
+          class: 'btn danger', text: '整体覆盖', onclick: function () {
+            m.close();
+            W.confirmBox('整体覆盖', '本机当前记录将被这份备份完全替换，无法撤销（如需保底，先点取消再导出当前数据）。确定继续？', function () {
+              W.DB = W.blankMerge(p);
+              W.save(); W.render(); W.toast('已用备份整体恢复', 'ok');
+            }, '覆盖');
+          }
+        })
+      ]
+    });
   }
   function regForm(filename, existing) {
     var d = DB();
@@ -2561,10 +3071,145 @@ window.SEED = {
     });
   }
 
+  /* ---------- 馆址直达：太原理工大学图书馆 ---------- */
+  function tyutLibBox() {
+    return el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;align-items:center' }, [
+        el('h3', { text: '太理图书馆直达', style: 'margin-right:auto' }),
+        el('span', { class: 'chip', text: '太原理工大学图书馆官网 · lib.tyut.edu.cn' })
+      ]),
+      el('p', { class: 'sub', style: 'margin:6px 0 10px', text: '一键在新标签页打开图书馆官网，馆藏检索、入馆预约、数据库入口等都从首页进；校外访问按学校统一认证走。' }),
+      el('div', { class: 'btnrow' }, [
+        el('button', {
+          class: 'btn primary', 'data-primary-action': 'tyutlib', text: '打开太理图书馆 ↗',
+          onclick: function () {
+            window.open('http://www.lib.tyut.edu.cn/', '_blank', 'noopener');
+          }
+        }),
+        el('a', { class: 'btn', href: 'http://www.lib.tyut.edu.cn/', target: '_blank', rel: 'noopener', text: '首页链接', style: 'display:inline-flex;align-items:center' })
+      ])
+    ]);
+  }
+
+  /* ---------- 本地导入（电脑文件 → 工作台） ---------- */
+  function localImportBox() {
+    var d = DB();
+    var subjSel = el('select', {}, d.subjects.map(function (s, i) {
+      return el('option', { value: s.id, text: s.name, selected: i === 0 ? 'selected' : null });
+    }));
+    var rep = el('div', { class: 'report hidden' });
+    var drop = el('div', { class: 'drop', style: 'margin-top:10px' }, [
+      el('b', { text: '把电脑里的文件拖到这里（可多选）' }),
+      el('p', { text: '真题 .txt / .md / .csv → 按上面的科目导入题库；备份 .json → 恢复数据（合并或覆盖）。也可点下方按钮直接选文件。' })
+    ]);
+    var picker = el('input', { type: 'file', multiple: 'multiple', accept: '.txt,.md,.markdown,.csv,.json,.text', style: 'display:none' });
+
+    function paint(lines) {
+      rep.innerHTML = '';
+      if (!lines.length) { rep.classList.add('hidden'); return; }
+      rep.classList.remove('hidden');
+      lines.forEach(function (l) { rep.appendChild(el('div', { class: l.cls, text: l.t })); });
+    }
+
+    function process(files) {
+      if (!files || !files.length) { W.toast('还没有选择文件', 'bad'); return; }
+      var js = [], qf = [], other = [];
+      Array.prototype.forEach.call(files, function (f) {
+        var n = (f.name || '').toLowerCase();
+        if (n.endsWith('.json')) js.push(f);
+        else if (/\.(txt|md|markdown|csv|text)$/.test(n)) qf.push(f);
+        else other.push(f.name);
+      });
+      var lines = [];
+      if (other.length) lines.push({ cls: 'f', t: '不支持的文件已跳过：' + other.join('、') + '（只认 txt / md / csv / json）' });
+
+      var total = 0, failN = 0, pend = qf.slice(), sub = W.subjectById(subjSel.value);
+      function nextQ() {
+        if (!pend.length) { finishQ(); return; }
+        var f = pend.shift();
+        var fr = new FileReader();
+        fr.onload = function () {
+          var txt = String(fr.result || '');
+          if (/\uFFFD/.test(txt)) lines.push({ cls: 'f', t: f.name + '：可能是非 UTF-8 编码，若有乱码请在记事本另存为 UTF-8 后重导' });
+          var r = W.parseFile(f.name, txt);
+          var added = 0;
+          r.recs.forEach(function (rec) {
+            var secId = rec.sectionLabel ? W.matchSection(sub, rec.sectionLabel) : (sub.sections[0] ? sub.sections[0].id : '');
+            d.questions.push({
+              id: W.uid('q'), subjectId: sub.id, sectionId: secId, kpId: null,
+              stem: rec.stem, options: rec.options || [], answer: rec.answer,
+              analysis: rec.analysis || '', type: rec.type || 'subjective', origin: '本地导入·' + f.name
+            });
+            added++;
+          });
+          total += added; failN += r.fails.length;
+          lines.push({ cls: added ? 's' : 'f', t: f.name + '：成功导入 ' + added + ' 题' + (r.fails.length ? '，' + r.fails.length + ' 条未导入' : '') });
+          r.fails.slice(0, 5).forEach(function (x) {
+            lines.push({ cls: 'f', t: '  · 第 ' + (x.line || '?') + ' 行 — ' + x.reason });
+          });
+          if (r.fails.length > 5) lines.push({ cls: 'f', t: '  · 其余 ' + (r.fails.length - 5) + ' 条同类问题省略' });
+          nextQ();
+        };
+        fr.onerror = function () { lines.push({ cls: 'f', t: f.name + '：读取失败' }); nextQ(); };
+        fr.readAsText(f, 'utf-8');
+      }
+      function finishQ() {
+        if (total) {
+          W.save();
+          W.toast('已导入 ' + total + ' 题到「' + sub.name + '」' + (failN ? '（' + failN + ' 条失败见下方）' : ''), failN ? '' : 'ok');
+        }
+        if (!js.length) { paint(lines); return; }
+        if (js.length > 1) lines.push({ cls: 'f', t: '检测到多个 JSON 备份，本次只处理第一个：' + js[0].name });
+        var f = js[0];
+        var fr = new FileReader();
+        fr.onload = function () {
+          var p = null;
+          try { p = JSON.parse(fr.result); } catch (e) {}
+          paint(lines);
+          if (!p || !Array.isArray(p.subjects) || !p.subjects.length) {
+            W.toast(f.name + ' 不是工作台备份文件，已跳过', 'bad', 4200);
+            return;
+          }
+          askMode(f.name, fr.result, p);
+        };
+        fr.onerror = function () { lines.push({ cls: 'f', t: f.name + '：读取失败' }); paint(lines); };
+        fr.readAsText(f, 'utf-8');
+      }
+      if (qf.length) nextQ(); else finishQ();
+    }
+
+    picker.addEventListener('change', function () { process(picker.files); picker.value = ''; });
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); });
+    });
+    drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files) process(e.dataTransfer.files); });
+    drop.addEventListener('click', function () { picker.click(); });
+
+    return el('div', { class: 'card', style: 'margin-bottom:14px' }, [
+      el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;align-items:center' }, [
+        el('h3', { text: '本地导入（电脑文件）', style: 'margin-right:auto' }),
+        el('span', { class: 'chip', text: '文件只在本机读取 · 不上传任何平台' })
+      ]),
+      el('p', { class: 'sub', style: 'margin:6px 0 10px', text: '两个用途：① 真题文件（txt / md / csv）批量导入到指定科目的题库；② 工作台备份（json）恢复数据。格式要求与各科「导入真题」一致：题号开头，选项每行 A. B. C.，答案/解析行以「答案：」「解析：」开头；csv 需含「题干」列。' }),
+      el('div', { class: 'btnrow' }, [
+        el('label', { text: '真题导入到科目：', style: 'font-size:12.5px;color:var(--ink2);font-weight:600' }),
+        subjSel,
+        el('button', { class: 'btn primary', 'data-primary-action': 'local-import', text: '选择文件导入', onclick: function () { picker.click(); } })
+      ]),
+      drop,
+      rep
+    ]);
+  }
+
   /* ---------- 视图 ---------- */
   function libraryView(view) {
     view.appendChild(cnkiBox());
+    view.appendChild(tyutLibBox());
     view.appendChild(refList());
+    view.appendChild(localImportBox());
     view.appendChild(backupBox());
   }
   W.registerView('library', libraryView);
@@ -2693,7 +3338,8 @@ window.SEED = {
                   var p = JSON.parse(txt);
                   if (!p || !Array.isArray(p.subjects)) throw new Error('不是本工作台的备份文件');
                   var ui = W.DB.ui;
-                  W.DB = Object.assign({ ui: ui }, p);
+                  W.DB = W.blankMerge(p);
+                  W.DB.ui = ui;
                   W.save(); W.render(); W.toast('已整体恢复', 'ok');
                 } catch (e) { W.toast('导入失败：' + e.message, 'bad'); }
               }, '覆盖');
@@ -3006,22 +3652,32 @@ window.SEED = {
   }
 
   window.attachAiQuestion = attachAiQuestion;
-  window.refreshAiChip = refreshAiChip;
+  window.refreshAiChip = refreshChip;
   window.aiTest = aiTest;
   W.bindAi = bind;
 })();
 
 </script>
 <script>
-/* SECTION: boot —— 启动顺序：载入数据 → 绑定搜索与 AI 面板 → 首屏渲染 */
+/* SECTION: boot —— 启动顺序：载入数据 → 绑定搜索与 AI 面板 → 首屏渲染（每步容错，单步异常不拖垮整页） */
 (function () {
   'use strict';
-  var W = window.WB;
+  function step(name, fn) {
+    try { fn(); } catch (e) {
+      if (window.console) console.error('[boot]' + name + ' 异常：', e);
+      try { if (window.WB && WB.toast) WB.toast('「' + name + '」加载异常，其余功能仍可用，可刷新重试', 'bad', 4200); } catch (e2) {}
+    }
+  }
   function start() {
-    W.load();
-    W.bindSearch();
-    if (W.bindAi) W.bindAi();
-    W.render();
+    var W = window.WB;
+    if (!W) return;
+    step('数据载入', function () { W.load(); });
+    step('全局搜索', function () { W.bindSearch(); });
+    step('千问窗口', function () {
+      if (W.bindAi) W.bindAi();
+      window.__dockBound = true;
+    });
+    step('首屏渲染', function () { W.render(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
